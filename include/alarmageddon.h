@@ -1,13 +1,12 @@
 #ifndef ALARMAGEDDON_H
 #define ALARMAGEDDON_H
 
-#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <ESP32Encoder.h>
 #include <esp_now.h>
 #include <WiFi.h>
-#include <time.h>
+// #include <time.h>
 
 // forward declarations for screen classes
 class MenuScreen;
@@ -16,6 +15,7 @@ class AlarmScreen;
 class WifiScreen;
 class SetScreen;
 class ApListScreen;
+class PasswordScreen;
 
 // extern globals from main
 extern const unsigned short titleSize;
@@ -24,7 +24,9 @@ extern const unsigned short screenHeight;
 extern Adafruit_SSD1306 display;
 extern tm timeData;
 extern unsigned short screenIndex;
-extern MenuScreen *container[5];
+extern MenuScreen *container[6];
+// extern const char* ssid;
+// extern const char* password;
 
 // helper functions
 int getCenteredCursorX(const char *text);
@@ -192,6 +194,9 @@ public:
 
 class PasswordScreen : public MenuScreen
 {
+private:
+    unsigned short selectedIndex = 0;
+
 public:
     void setup() override;
     void loop() override;

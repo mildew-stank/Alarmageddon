@@ -1,6 +1,7 @@
 {
     "C_Cpp.formatting": "clangFormat",
     "files.associations": {
-        "string": "cpp"
+        "string": "cpp",
+        "algorithm": "cpp"
     }
 }

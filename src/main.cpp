@@ -1,7 +1,6 @@
 // TODO: password page
 // uniform progress bar animations on wifi, ntp, & ap scan
 // split menuscreen subclasses into separate files and get a header file going
-// disconnect button sometimes flickers, why?
 // my bedounce time is massive, bad button? seems so
 // when wifi fails we're stuck rn
 // when ntp fails stuck
@@ -11,13 +10,13 @@
 #include "alarmageddon.h"
 
 const unsigned short buttonPin = 15; // NOTE: maybe dont use 15 bc it has output on boot
-const unsigned short encoderA = 16;
-const unsigned short encoderB = 17;
+const unsigned short encoderPinA = 16;
+const unsigned short encoderPinB = 17;
 const unsigned short screenWidth = 128;
 const unsigned short screenHeight = 32;
 const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
-// const char* ssid = "ON150OW-BB";
-// const char* password = "toaster02socket";
+// const char* ssid;
+// const char* password;
 
 struct struct_message
 {
@@ -43,7 +42,8 @@ AlarmScreen as;
 WifiScreen ws;
 SetScreen ss;
 ApListScreen ls;
-MenuScreen *container[5] = {&cs, &as, &ws, &ss, &ls};
+PasswordScreen ps;
+MenuScreen *container[6] = {&cs, &as, &ws, &ss, &ls, &ps};
 
 void playAlarmMelody()
 {
@@ -276,7 +276,7 @@ void setup()
   Serial.begin(921600);
   pinMode(buttonPin, INPUT);
   pinMode(BUILTIN_LED, OUTPUT);
-  knob.attachHalfQuad(encoderA, encoderB);
+  knob.attachHalfQuad(encoderPinA, encoderPinB);
   if (!connectToScreen())
     return; // this is catastrophic
   if (connectToWifi())

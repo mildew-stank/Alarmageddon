@@ -101,7 +101,6 @@ void ApListScreen::right()
 
 void ApListScreen::select()
 {
-  // TODO: store ssid and go to password screen
   Serial.println(ssidBuffer[selectedIndex]);
   if (selectedIndex == 0)
   {
@@ -109,5 +108,11 @@ void ApListScreen::select()
     screenIndex = 2;
     container[screenIndex]->setup(); // wifi screen
     return;
+  }
+  else 
+  {
+    // TODO: store ssid
+    screenIndex = 5;
+    container[screenIndex]->setup(); // password screen
   }
 }
