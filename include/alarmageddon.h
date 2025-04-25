@@ -177,7 +177,11 @@ private:
     unsigned short topIndex = 0;
     char ssidBuffer[16][17];
     short length;
+#if defined(HEIGHT_64)
+    unsigned short visibleCount = 7;
+#else
     unsigned short visibleCount = 3;
+#endif
     short scanStatus = -2;
     short scanStatusPrevious = -2;
     int min(int a, int b);
@@ -195,7 +199,17 @@ public:
 class PasswordScreen : public MenuScreen
 {
 private:
-    unsigned short selectedIndex = 0;
+    // const char charList[48] = "1234567890-=[];',./\\\nabcdefghijklmnopqrstuvwxyz";
+    // const char charListShifted[48] = "!@#$%^&*()_+{}:\"<>?|\nABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const char charList[48] = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./\\";
+    const char charListShifted[48] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}:\"<>?|";
+    static constexpr short visibleCharCount = 10;
+    short charListScroll = 0;
+    short selectedIndex = 0;
+    bool isShifted = false;
+    char password[64];
+    short passwordIndex = 0;
+    bool backspace = false;
 
 public:
     void setup() override;

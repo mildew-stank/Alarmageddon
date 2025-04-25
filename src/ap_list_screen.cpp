@@ -28,7 +28,7 @@ void ApListScreen::render()
     printCenteredTextX("Access Points");
   else
     printCenteredTextX("Scanning...");
-    display.setTextSize(1);
+  display.setTextSize(1);
   for (unsigned short i = 0; i < visibleCount; i++)
   {
     unsigned short currentIndex = topIndex + i;
@@ -37,10 +37,10 @@ void ApListScreen::render()
       return;
     if (currentIndex == selectedIndex)
     {
-      display.fillRect(0, (i + 1) * 8, screenWidth, 8, WHITE); // i + 1 to go under title text
+      display.fillRect(0, (i + titleSize) * 8, screenWidth, 8, WHITE); // i + 1 to go under title text
       display.setTextColor(BLACK);
     }
-    display.setCursor(1, (i + 1) * 8);
+    display.setCursor(1, (i + titleSize) * 8);
     display.setTextWrap(false);
     display.print(ssidBuffer[currentIndex]);
     display.setTextWrap(true);
@@ -51,25 +51,21 @@ void ApListScreen::render()
 
 int ApListScreen::min(int a, int b)
 {
-  int c;
-  if (a < b)
-    c = a;
-  else if (b < a)
-    c = b;
-  if (c < 0)
-    c = 0;
-  return c;
+  if (a < 0 || b < 0) return 0;
+  return (a < b) ? a : b;
 }
 
 void ApListScreen::populateList()
 {
   // TODO: add signal str here or something to differentiate matching ssids. max chars on screen should be 21
-  length = min(WiFi.scanComplete(), sizeof(ssidBuffer) / sizeof(ssidBuffer[0])) + 1; // this is the total size divided by the array size, or 272 / 17 = 16
-  strncpy(ssidBuffer[0], "Back", 16);
-  for (short i = 1; i < length; i++)
+  unsigned short maxEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]) - 1; // sizeof ssidBuffer x * y so divide and reserve 1 for "Back"
+  short scanCount = WiFi.scanComplete();
+  length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
+  strncpy(ssidBuffer[0], "Back", 16); // TODO: 16 should be sizeof ssidbuffer[0] - 1 if everything works out
+  for (unsigned short i = 1; i < length; i++)
   {
     strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), 16);
-    ssidBuffer[i][16] = '\0'; // add the null terminator back to truncated ssids
+    ssidBuffer[i][17] = '\0'; // return null terminator to the end of truncated strings
   }
 }
 
@@ -109,7 +105,7 @@ void ApListScreen::select()
     container[screenIndex]->setup(); // wifi screen
     return;
   }
-  else 
+  else
   {
     // TODO: store ssid
     screenIndex = 5;

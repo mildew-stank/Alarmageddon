@@ -1,6 +1,6 @@
 // TODO: password page
 // uniform progress bar animations on wifi, ntp, & ap scan
-// split menuscreen subclasses into separate files and get a header file going
+// missing clock page needs investigation. maybe happens when playing with contorls at start, or booting too fast
 // my bedounce time is massive, bad button? seems so
 // when wifi fails we're stuck rn
 // when ntp fails stuck
@@ -9,14 +9,15 @@
 
 #include "alarmageddon.h"
 
-const unsigned short buttonPin = 15; // NOTE: maybe dont use 15 bc it has output on boot
+#if defined(HEIGHT_64)
+const unsigned short screenHeight = 64;
+#else
+const unsigned short screenHeight = 32;
+#endif
+const unsigned short screenWidth = 128;
 const unsigned short encoderPinA = 16;
 const unsigned short encoderPinB = 17;
-const unsigned short screenWidth = 128;
-const unsigned short screenHeight = 32;
-const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
-// const char* ssid;
-// const char* password;
+const unsigned short buttonPin = 18;
 
 struct struct_message
 {
@@ -30,12 +31,22 @@ tm timeData;
 struct_message message;
 esp_now_peer_info_t peerInfo;
 
+#if defined(HEIGHT_64)
+const char *tzString = "CST6CDT,M3.2.0,M11.1.0";
+const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
+const unsigned short titleSize = 2;
+#else
+const char *tzString = "EST5EDT,M3.2.0,M11.1.0"; // NOTE: to be set in settings later on
+const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14}; // NOTE: this too
 const unsigned short titleSize = 1;
+#endif
 int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
 unsigned short screenIndex = 0;
 bool alarmOn = false;
+// const char* ssid;
+// const char* password;
 
 ClockScreen cs;
 AlarmScreen as;
@@ -53,7 +64,7 @@ void playAlarmMelody()
 
   if (millis() - melodyMillis < 1000 || !alarmOn)
     return;
-  tone(18, melody[note], 500); // NOTE: i put an active buzzer on the board so this doesnt work it just sounds like a cricket
+  tone(19, melody[note], 500); // NOTE: i put an active buzzer on the board so this doesnt work it just sounds like a cricket
   note++;
   if (note > 3)
     note = 0;
@@ -157,7 +168,7 @@ void printButton(short padding, short radius, const char *text)
 
 bool connectToScreen()
 {
-  if (!display.begin(SSD1306_SWITCHCAPVCC))
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x03C))
   {
     Serial.println("Display failed");
     return false;
@@ -197,7 +208,6 @@ bool connectToWifi()
 bool connectToNtp()
 {
   int nptAttempts = 5;
-  const char *tzString = "EST+5CDT,M3.2.0/2,M11.1.0/2";
   const char *ntpServer = "pool.ntp.org";
   bool gotTime;
 

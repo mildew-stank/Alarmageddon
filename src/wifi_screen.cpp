@@ -29,7 +29,7 @@ void WifiScreen::render()
   if (wifiStatus == WL_CONNECTED)
   {
     // disconnect button menu
-    display.fillRect(0, 8, screenWidth, screenHeight - (titleSize * 8), BLACK); // this clears the area below the title (8px is fontSize 1)
+    display.fillRect(0, titleSize * 8, screenWidth, screenHeight - (titleSize * 8), BLACK); // this clears the area below the title (8px is fontSize 1)
     display.setTextSize(2);
     display.setCursor(getCenteredCursorX("Disconnect"), display.getCursorY() + 4); // 4 is essentially half-padding plus 2 pixels, and 2 pixels is the gap from text on the above line
     printButton(4, 4, "Disconnect");
@@ -42,7 +42,7 @@ void WifiScreen::render()
   else
   {
     // scan button menu
-    display.fillRect(0, 8, screenWidth, screenHeight - (titleSize * 8), BLACK);
+    display.fillRect(0, titleSize * 8, screenWidth, screenHeight - (titleSize * 8), BLACK);
     display.setTextSize(2);
     display.setCursor(getCenteredCursorX("Scan"), display.getCursorY() + 4);
     printButton(4, 4, "Scan");

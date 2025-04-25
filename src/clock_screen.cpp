@@ -2,6 +2,8 @@
 
 void ClockScreen::setup()
 {
+  Serial.printf("screen index from clock %i\n", screenIndex);
+  clockMillis = millis();
   render();
 }
 
@@ -59,6 +61,8 @@ const char *ClockScreen::getDayOfWeekName(int day)
 
 void ClockScreen::left()
 {
+  screenIndex = 3; // settings page
+  container[screenIndex]->setup();
 }
 
 void ClockScreen::right()
