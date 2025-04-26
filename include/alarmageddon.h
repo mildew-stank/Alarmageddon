@@ -203,6 +203,8 @@ private:
     // const char charListShifted[48] = "!@#$%^&*()_+{}:\"<>?|\nABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const char charList[48] = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./\\";
     const char charListShifted[48] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}:\"<>?|";
+    char charListButtons[3][10] = {"Space", "Backspace", "Shift"};
+    char charListNavigation[2][7] = {"Accept", "Back"};
     static constexpr short visibleCharCount = 10;
     short charListScroll = 0;
     short selectedIndex = 0;

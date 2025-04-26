@@ -38,13 +38,25 @@ void PasswordScreen::render()
         else
             display.print(charList[index]);
     }
-    display.setTextColor(WHITE, BLACK);
-    display.setTextSize(2);
-    display.print("Space");
-    display.print("Backspace");
-    display.print("Shift");
-    display.print("Accept");
-    display.print("Back\n");
+
+    //for (short i = 0; i < 3; i++)
+    //{
+    //    if (selectedIndex == i)
+    //    {
+    //        display.print(charListButtons[i]);
+    //        display.print(" ");
+    //    }
+    //}
+
+    //for (short i = 0; i < 2; i++)
+    //{
+    //    if (selectedIndex == i)
+    //    {
+    //        display.print(charListNavigation[0]);
+    //        display.print(" ");
+    //    }
+    //}
+
     display.setTextWrap(true);
     display.setTextColor(WHITE, BLACK);
     display.setTextSize(1);
@@ -59,7 +71,7 @@ void PasswordScreen::left()
         selectedIndex = sizeof(charList) - 1;
     if (selectedIndex < charListScroll)
         charListScroll = selectedIndex;
-    if (selectedIndex == sizeof(charList) - 1)
+    if (selectedIndex >= sizeof(charList) - 1)
         charListScroll = sizeof(charList) - visibleCharCount;
     if (charListScroll < 0)
         charListScroll = 0;
