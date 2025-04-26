@@ -51,6 +51,7 @@ void WifiScreen::render()
       buttonPressed = false;
       screenIndex = 4; // ap list page
       container[screenIndex]->setup();
+      //return;
     }
   }
   display.display();

@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <ESP32Encoder.h>
 #include <esp_now.h>
+#include <Preferences.h>
 #include <WiFi.h>
 // #include <time.h>
 
@@ -25,8 +26,8 @@ extern Adafruit_SSD1306 display;
 extern tm timeData;
 extern unsigned short screenIndex;
 extern MenuScreen *container[6];
-// extern const char* ssid;
-// extern const char* password;
+extern char ssid[32];
+extern char password[64];
 
 // helper functions
 int getCenteredCursorX(const char *text);
@@ -34,7 +35,9 @@ int getCenteredCursorFormattedX(unsigned short bufferSize, const char *text, ...
 void printfCenteredTextX(unsigned short bufferSize, const char *text, ...);
 void printCenteredTextX(const char *text, bool newLine = false);
 void printButton(short padding, short radius, const char *text);
-// void printSelector(short y);
+bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved = false, bool tryNtp = true);
+void saveCredentials();
+void loadCredentials();
 
 // base class
 class MenuScreen
@@ -199,19 +202,16 @@ public:
 class PasswordScreen : public MenuScreen
 {
 private:
-    // const char charList[48] = "1234567890-=[];',./\\\nabcdefghijklmnopqrstuvwxyz";
-    // const char charListShifted[48] = "!@#$%^&*()_+{}:\"<>?|\nABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const char charList[48] = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./\\";
+    const char charList[47] = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./\\";
     const char charListShifted[48] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}:\"<>?|";
-    char charListButtons[3][10] = {"Space", "Backspace", "Shift"};
-    char charListNavigation[2][7] = {"Accept", "Back"};
-    static constexpr short visibleCharCount = 10;
+    const char charListButtons[5][10] = {"Space", "Backspace", "Shift", "Accept", "Back"};
+    const short visibleCharCount = 10;
+    bool inScrollable = true;
+    bool isShifted = false;
+    char passwordPreview[64];
     short charListScroll = 0;
     short selectedIndex = 0;
-    bool isShifted = false;
-    char password[64];
     short passwordIndex = 0;
-    bool backspace = false;
 
 public:
     void setup() override;

@@ -26,7 +26,7 @@ struct struct_message
 
 Adafruit_SSD1306 display(screenWidth, screenHeight, &Wire);
 ESP32Encoder knob;
-
+Preferences preferences;
 tm timeData;
 struct_message message;
 esp_now_peer_info_t peerInfo;
@@ -36,7 +36,7 @@ const char *tzString = "CST6CDT,M3.2.0,M11.1.0";
 const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
 const unsigned short titleSize = 2;
 #else
-const char *tzString = "EST5EDT,M3.2.0,M11.1.0"; // NOTE: to be set in settings later on
+const char *tzString = "EST5EDT,M3.2.0,M11.1.0";                         // NOTE: to be set in settings later on
 const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14}; // NOTE: this too
 const unsigned short titleSize = 1;
 #endif
@@ -45,8 +45,8 @@ short buttonStatePrevious = 0;
 unsigned short note = 0;
 unsigned short screenIndex = 0;
 bool alarmOn = false;
-// const char* ssid;
-// const char* password;
+char ssid[32];     // NOTE: do these two need an extra for null termination?
+char password[64]; //
 
 ClockScreen cs;
 AlarmScreen as;
@@ -161,10 +161,24 @@ void printButton(short padding, short radius, const char *text)
   display.setTextColor(WHITE);
 }
 
-// void printSelector(short y) {
-//   display.fillRect(0, 8, 6, screenHeight - 8, BLACK); // clear the previous cursor (font size 1 is height 8 width 6)
-//   display.drawChar(0, y, 0x10, WHITE, BLACK, 1);
-// }
+void saveCredentials()
+{
+  preferences.begin("credentials", false);
+  preferences.clear();
+  preferences.putString("ssid", ssid);
+  preferences.putString("password", password);
+  preferences.end();
+  Serial.printf("saved %s and %s\n", ssid, password);
+}
+
+void loadCredentials()
+{
+  preferences.begin("credentials", false);
+  strncpy(ssid, preferences.getString("ssid", "").c_str(), sizeof(ssid) - 1);
+  strncpy(password, preferences.getString("password", "").c_str(), sizeof(password) - 1);
+  preferences.end();
+  Serial.printf("loaded %s and %s\n", ssid, password);
+}
 
 bool connectToScreen()
 {
@@ -175,33 +189,8 @@ bool connectToScreen()
   }
   display.clearDisplay();
   display.setTextColor(WHITE);
-  display.dim(true); // TODO: investigate if this should be a setting or if its too little a difference to matter
+  // display.dim(true); // TODO: investigate if this should be a setting or if its too little a difference to matter
   display.setCursor(0, 0);
-  return true;
-}
-
-bool connectToWifi()
-{
-  int wifiAttempts = 5;
-  wl_status_t wifiStatus = WiFi.begin();
-
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.println("Connecting to wifi...");
-  display.display();
-  delay(1000);
-  while (wifiStatus != WL_CONNECTED && wifiAttempts > 0)
-  {
-    wifiStatus = WiFi.status();
-    delay(1000);
-    wifiAttempts--;
-  }
-  if (wifiStatus != WL_CONNECTED)
-  {
-    Serial.println("Wifi timed out");
-    return false;
-  }
-  Serial.println("Wifi connected");
   return true;
 }
 
@@ -228,6 +217,50 @@ bool connectToNtp()
     return false;
   }
   Serial.println("Connected to NTP server");
+  return true;
+}
+
+bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved, bool tryNtp)
+{
+  // TODO: should probably be a ConnectionScreen class
+  int wifiAttempts = 5;
+  wl_status_t wifiStatus;
+
+  WiFi.disconnect();
+
+  if (trySaved)
+  {
+    loadCredentials();
+    wifiStatus = WiFi.begin(ssid, password);
+  }
+  else
+    wifiStatus = WiFi.begin(enterSsid, enterPassword);
+
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("Connecting to wifi...");
+  display.display();
+  delay(1000);
+  while (wifiStatus != WL_CONNECTED && wifiAttempts > 0)
+  {
+    wifiStatus = WiFi.status();
+    delay(1000);
+    wifiAttempts--;
+  }
+  if (wifiStatus != WL_CONNECTED)
+  {
+    Serial.println("Wifi timed out");
+    return false;
+  }
+  Serial.println("Wifi connected");
+  if (!trySaved){
+    strncpy(ssid, enterSsid, sizeof(ssid) - 1);
+    strncpy(password, enterPassword, sizeof(password) - 1);
+    saveCredentials();
+  }
+    
+  if (tryNtp)
+    connectToNtp();
   return true;
 }
 
@@ -289,10 +322,9 @@ void setup()
   knob.attachHalfQuad(encoderPinA, encoderPinB);
   if (!connectToScreen())
     return; // this is catastrophic
-  if (connectToWifi())
-    connectToNtp();
+  connectToWifi("", "", true);
   // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
-  startEspNow();
+  // startEspNow();
   container[0]->setup();
 }
 

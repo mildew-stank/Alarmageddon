@@ -21,7 +21,7 @@ void ClockScreen::render()
   {
     // NOTE: if setting time but not date without wifi sync to ntp this might happen bc if getlocaltime sees the timedata saying the year is < 116 it adds a delay(10)
     Serial.println("Failed to obtain time");
-    return;
+    // return;
   }
   display.clearDisplay();
   display.setCursor(0, 0);

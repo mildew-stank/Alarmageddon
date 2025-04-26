@@ -2,6 +2,9 @@
 
 void ApListScreen::setup()
 {
+  selectedIndex = 0;
+  topIndex = 0;
+  WiFi.disconnect(); // scanNetworks won't work if we tried to connect to something with bad credentials, so make sure we're disconnected
   WiFi.scanNetworks(true);
   populateList();
   render();
@@ -51,7 +54,8 @@ void ApListScreen::render()
 
 int ApListScreen::min(int a, int b)
 {
-  if (a < 0 || b < 0) return 0;
+  if (a < 0 || b < 0)
+    return 0;
   return (a < b) ? a : b;
 }
 
@@ -60,8 +64,9 @@ void ApListScreen::populateList()
   // TODO: add signal str here or something to differentiate matching ssids. max chars on screen should be 21
   unsigned short maxEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]) - 1; // sizeof ssidBuffer x * y so divide and reserve 1 for "Back"
   short scanCount = WiFi.scanComplete();
+
   length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
-  strncpy(ssidBuffer[0], "Back", 16); // TODO: 16 should be sizeof ssidbuffer[0] - 1 if everything works out
+  strncpy(ssidBuffer[0], "Back", 16);      // TODO: 16 should be sizeof ssidbuffer[0] - 1 if everything works out
   for (unsigned short i = 1; i < length; i++)
   {
     strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), 16);
@@ -105,10 +110,8 @@ void ApListScreen::select()
     container[screenIndex]->setup(); // wifi screen
     return;
   }
-  else
-  {
-    // TODO: store ssid
-    screenIndex = 5;
-    container[screenIndex]->setup(); // password screen
-  }
+  strncpy(ssid, WiFi.SSID(selectedIndex - 1).c_str(), 32);
+  Serial.printf("SSID global: %s buffer: %s WiFi: %s\n", ssid, ssidBuffer[selectedIndex], WiFi.SSID(selectedIndex));
+  screenIndex = 5;
+  container[screenIndex]->setup(); // password screen
 }
