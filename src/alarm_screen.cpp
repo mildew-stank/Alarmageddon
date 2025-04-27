@@ -1,10 +1,5 @@
 #include "alarmageddon.h"
 
-short selectionIndex = 0;
-short hour = 0;
-short minute = 0;
-char status[2][4] = {"Off", "On"};
-
 void AlarmScreen::setup()
 {
     setDisplayToDefault(); // TODO: reduce redundacy with this and in render for all screens. i put this here as a failsafe bc i know i got some stuff wacked in other screens

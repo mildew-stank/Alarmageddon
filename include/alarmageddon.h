@@ -95,6 +95,12 @@ public:
 
 class AlarmScreen : public MenuScreen
 {
+private:
+    short selectionIndex = 0;
+    short hour = 0;
+    short minute = 0;
+    char status[2][4] = {"Off", "On"};
+
 public:
     void setup() override;
     void loop() override;
