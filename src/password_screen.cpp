@@ -1,4 +1,3 @@
-// TODO: use display.fillRect with a - 1 offset instead of setting font color for the highlight
 // TODO: maybe having 9 chars on screen with the scroll happening at the center until near the end would make the transition to buttons less jarring. or leave at least 1 on each side so theres SOME padding b4 end. prob 3 padding
 // TODO: prevent passwordIndex from going out of bounds
 // TODO: render just the rightmost part of the password if its too long to fit on screen. either same way as charlist scroll or maybe just offset the cursor with gettextbounds
@@ -64,7 +63,8 @@ void PasswordScreen::render()
         display.getTextBounds(charListButtons[selectedIndex], display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
         display.fillRect(centeredX - 1, y - 1, w, h + 1, WHITE);
         display.setTextColor(BLACK);
-        printCenteredTextX(charListButtons[selectedIndex]); // NOTE: using printbutton would be nice here but im at least 4 pixels short
+        printCenteredTextX(charListButtons[selectedIndex]);
+        // printButton(4, 4, charListButtons[selectedIndex]); // NOTE: i have no pixels to spare but this might look good on a larger screen
     }
     display.setTextWrap(true);
     display.setTextColor(WHITE);
@@ -123,49 +123,48 @@ void PasswordScreen::select()
     if (inScrollable)
     {
         passwordPreview[passwordIndex++] = (isShifted || isCapsLocked) ? charListShifted[selectedIndex] : charList[selectedIndex];
-        // password[passwordIndex + 1] = '\0';
         isShifted = false;
         render();
         return;
     }
-    if (selectedIndex == 0) // space
+    if (selectedIndex == SPACE)
     {
         passwordPreview[passwordIndex++] = ' ';
         render();
     }
-    else if (selectedIndex == 1 && passwordIndex >= 0) // backspace
+    else if (selectedIndex == BACKSPACE && passwordIndex >= 0)
     {
         passwordIndex--;
         passwordPreview[passwordIndex] = ' ';
-        // password[passwordIndex] = '\0';
         render();
     }
-    else if (selectedIndex == 2) // shift
+    else if (selectedIndex == SHIFT)
     {
         isShifted = !isShifted;
         render();
     }
-    else if (selectedIndex == 3)
+    else if (selectedIndex == CAPSLOCK)
     {
         isCapsLocked = !isCapsLocked;
         render();
     }
-    else if (selectedIndex == 4) // accept
+    else if (selectedIndex == ACCEPT)
     {
         strcpy(password, passwordPreview);
         Serial.printf("SSID: %s PW: %s\n", ssid, password);
         connectToWifi(ssid, password);
-        screenIndex = 2; // wifi page
-        container[screenIndex]->setup();
+        setActiveScreen(WIFI);
         // return;
         display.display();
     }
-    else if (selectedIndex == 5) // back
+    else if (selectedIndex == BACK)
     {
-        screenIndex = 4;                 // ap list page
-        container[screenIndex]->setup(); // TODO: this and above line should be a func that uses enum as arg bc i do it several times and leave the same comment
+        setActiveScreen(AP_LIST);
         // return;
-        display.display(); // TODO: figure out why i need to run display to show the Scanning... part of ap_list_screen. i do this in wifi_screen to ap_list_screen too but it was an accident. figure that out and put the returns and single display() back.
+        display.display();
+        // TODO: figure out why i need to run display to show the Scanning... part of ap_list_screen.
+        // i do this in wifi_screen to ap_list_screen too but it was an accident.
+        // figure that out and put the returns and single display() back.
     }
     // render();
 }

@@ -35,8 +35,7 @@ void SetScreen::left()
 
 void SetScreen::right()
 {
-  screenIndex = 0; // alarm page
-  container[screenIndex]->setup();
+  setActiveScreen(CLOCK);
 }
 
 void SetScreen::select()

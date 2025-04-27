@@ -19,15 +19,10 @@ void ClockScreen::render()
 {
   clockMillis = millis();
   if (!getLocalTime(&timeData, 0))
-  {
-    // NOTE: if setting time but not date without wifi sync to ntp this might happen bc if getlocaltime sees the timedata saying the year is < 116 it adds a delay(10)
-    Serial.println("Failed to obtain time");
-    // return;
-  }
+    Serial.println("Failed to obtain time"); // TODO: this needs some scrutiny bc if getlocaltime sees timedata saying the year is < 116 it adds a delay(10)
   display.clearDisplay();
   display.setCursor(0, 0);
   display.setTextSize(titleSize);
-  // printfCenteredTextX(24, "It's %sday!\n", getDayOfWeekName(timeData.tm_wday));
   printCenteredTextX(getDayOfWeekName(timeData.tm_wday), true);
   display.setTextSize(2);
   display.setCursor(getCenteredCursorX("00:00:00"), display.getCursorY());
@@ -62,8 +57,7 @@ const char *ClockScreen::getDayOfWeekName(int day)
 
 void ClockScreen::left()
 {
-  screenIndex = 3; // settings page
-  container[screenIndex]->setup();
+  setActiveScreen(SETTINGS);
 }
 
 void ClockScreen::right()

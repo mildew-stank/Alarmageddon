@@ -36,9 +36,31 @@ void printfCenteredTextX(unsigned short bufferSize, const char *text, ...);
 void printCenteredTextX(const char *text, bool newLine = false);
 void printButton(short padding, short radius, const char *text);
 bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved = false, bool tryNtp = true);
+void setDisplayToDefault();
+void setActiveScreen(int nextIndex);
 void saveCredentials();
 void loadCredentials();
-void setDisplayToDefault();
+
+enum ScreenIndex
+{
+    CLOCK = 0,
+    ALARM = 1,
+    WIFI = 2,
+    SETTINGS = 3,
+    AP_LIST = 4,
+    PASSWORD = 5,
+    SCREEN_COUNT = 6
+};
+
+enum PasswordButtons
+{
+    SPACE = 0,
+    BACKSPACE = 1,
+    SHIFT = 2,
+    CAPSLOCK = 3,
+    ACCEPT = 4,
+    BACK = 5
+};
 
 // base class
 class MenuScreen

@@ -52,8 +52,7 @@ void WifiScreen::render()
     if (buttonPressed)
     {
       buttonPressed = false;
-      screenIndex = 4; // ap list page
-      container[screenIndex]->setup();
+      setActiveScreen(AP_LIST);
       // return;
     }
   }

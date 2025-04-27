@@ -170,6 +170,12 @@ void setDisplayToDefault()
   display.setTextWrap(false);
 }
 
+void setActiveScreen(int nextIndex)
+{
+  screenIndex = nextIndex;
+  container[screenIndex]->setup();
+}
+
 void saveCredentials()
 {
   preferences.begin("credentials", false);

@@ -128,13 +128,11 @@ void ApListScreen::select() // TODO: half the time going back doesnt draw "Wifi"
   if (selectedIndex == 0)
   {
     WiFi.scanDelete();
-    screenIndex = 2;
-    container[screenIndex]->setup(); // wifi screen
+    setActiveScreen(WIFI);
     // display.display();//
     return;
   }
   strncpy(ssid, WiFi.SSID(selectedIndex - 1).c_str(), 32);
   Serial.printf("SSID global: %s buffer: %s WiFi: %s\n", ssid, ssidBuffer[selectedIndex], WiFi.SSID(selectedIndex));
-  screenIndex = 5;
-  container[screenIndex]->setup(); // password screen
+  setActiveScreen(PASSWORD);
 }
