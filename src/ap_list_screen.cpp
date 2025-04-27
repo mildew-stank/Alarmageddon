@@ -30,9 +30,9 @@ void ApListScreen::render()
   display.setTextSize(titleSize);
   display.setTextColor(WHITE);
   if (length > 1)
-    printCenteredTextX("Access Points");
+    printCenteredTextX("AP List");
   else
-    printCenteredTextX("Scanning...");
+    printCenteredTextX("Scanning");
   display.setTextSize(1);
   for (unsigned short i = 0; i < visibleCount; i++)
   {

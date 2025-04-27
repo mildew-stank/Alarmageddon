@@ -45,6 +45,7 @@ unsigned short note = 0;
 unsigned short screenIndex = 0;
 bool alarmOn = false;
 bool alarmSet = false;
+bool is24Hour = true;
 char ssid[32];     // NOTE: do these two need an extra for null termination?
 char password[64]; //
 

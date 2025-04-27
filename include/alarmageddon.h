@@ -29,6 +29,7 @@ extern MenuScreen *container[6];
 extern char ssid[32];
 extern char password[64];
 extern bool alarmSet;
+extern bool is24Hour;
 
 // helper functions
 int getCenteredCursorX(const char *text);
@@ -193,6 +194,11 @@ private:
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x48, 0x20, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x4a, 0x08, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x22, 0x44, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    const char optionsList[4][16] = {"Back", "Set time", "24 Hour", "Display seconds"};
+    bool displaysSeconds = true;
+    unsigned short topIndex = 0;
+    unsigned short selectedIndex = 0;
+    unsigned short visibleCount = 6;
 
 public:
     void setup() override;
@@ -208,7 +214,7 @@ class ApListScreen : public MenuScreen
 private:
     unsigned short selectedIndex = 0;
     unsigned short topIndex = 0;
-    char ssidBuffer[16][17];
+    char ssidBuffer[64][17];
     short length;
     const unsigned char wifi_sig1[8] PROGMEM = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00};
@@ -225,7 +231,7 @@ private:
         wifi_sig4};
 
 #if defined(HEIGHT_64)
-    unsigned short visibleCount = 7;
+    unsigned short visibleCount = 6;
 #else
     unsigned short visibleCount = 3;
 #endif
