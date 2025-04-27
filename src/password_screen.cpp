@@ -8,6 +8,7 @@
 
 void PasswordScreen::setup()
 {
+    setDisplayToDefault();
     inScrollable = true;
     isShifted = false;
     charListScroll = 0;
@@ -23,6 +24,9 @@ void PasswordScreen::loop()
 
 void PasswordScreen::render()
 {
+    int16_t x, y;
+    uint16_t w, h;
+
     display.clearDisplay();
     display.setCursor(0, 0);
     display.setTextSize(1);
@@ -36,12 +40,18 @@ void PasswordScreen::render()
         {
             short index = charListScroll + i;
             if (index >= sizeof(charList))
-                break;
+                return;
             if (index == selectedIndex)
-                display.setTextColor(BLACK, WHITE);
+            {
+                char tempStr[2] = {charListShifted[index], '\0'};
+
+                display.getTextBounds(tempStr, display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
+                display.fillRect(x - 1, y - 1, w, h + 1, WHITE);
+                display.setTextColor(BLACK);
+            }
             else
-                display.setTextColor(WHITE, BLACK);
-            if (isShifted)
+                display.setTextColor(WHITE);
+            if (isShifted || isCapsLocked)
                 display.print(charListShifted[index]);
             else
                 display.print(charList[index]);
@@ -49,11 +59,15 @@ void PasswordScreen::render()
     }
     else
     {
-        display.setTextColor(BLACK, WHITE);
+        int centeredX = getCenteredCursorX(charListButtons[selectedIndex]);
+
+        display.getTextBounds(charListButtons[selectedIndex], display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
+        display.fillRect(centeredX - 1, y - 1, w, h + 1, WHITE);
+        display.setTextColor(BLACK);
         printCenteredTextX(charListButtons[selectedIndex]); // NOTE: using printbutton would be nice here but im at least 4 pixels short
     }
     display.setTextWrap(true);
-    display.setTextColor(WHITE, BLACK);
+    display.setTextColor(WHITE);
     display.println(""); // for the newline
     display.setTextSize(1);
     printCenteredTextX(passwordPreview);
@@ -67,7 +81,7 @@ void PasswordScreen::left()
     {
         if (selectedIndex < 0) // to buttons
         {
-            selectedIndex = 4;
+            selectedIndex = sizeof(charListButtons) / sizeof(charListButtons[0]) - 1;
             inScrollable = false;
         }
         else if (selectedIndex < charListScroll)
@@ -95,7 +109,7 @@ void PasswordScreen::right()
         else if (selectedIndex >= charListScroll + visibleCharCount)
             charListScroll = selectedIndex - visibleCharCount + 1; // scroll right
     }
-    else if (selectedIndex > 4) // to characters
+    else if (selectedIndex > sizeof(charListButtons) / sizeof(charListButtons[0]) - 1) // to characters
     {
         selectedIndex = 0;
         charListScroll = 0;
@@ -108,9 +122,9 @@ void PasswordScreen::select()
 {
     if (inScrollable)
     {
-        passwordPreview[passwordIndex++] = (isShifted) ? charListShifted[selectedIndex] : charList[selectedIndex];
+        passwordPreview[passwordIndex++] = (isShifted || isCapsLocked) ? charListShifted[selectedIndex] : charList[selectedIndex];
         // password[passwordIndex + 1] = '\0';
-        isShifted = false; // NOTE: should i have a capslock button?
+        isShifted = false;
         render();
         return;
     }
@@ -131,7 +145,12 @@ void PasswordScreen::select()
         isShifted = !isShifted;
         render();
     }
-    else if (selectedIndex == 3) // accept
+    else if (selectedIndex == 3)
+    {
+        isCapsLocked = !isCapsLocked;
+        render();
+    }
+    else if (selectedIndex == 4) // accept
     {
         strcpy(password, passwordPreview);
         Serial.printf("SSID: %s PW: %s\n", ssid, password);
@@ -141,7 +160,7 @@ void PasswordScreen::select()
         // return;
         display.display();
     }
-    else if (selectedIndex == 4) // back
+    else if (selectedIndex == 5) // back
     {
         screenIndex = 4;                 // ap list page
         container[screenIndex]->setup(); // TODO: this and above line should be a func that uses enum as arg bc i do it several times and leave the same comment

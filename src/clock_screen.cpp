@@ -2,6 +2,7 @@
 
 void ClockScreen::setup()
 {
+  setDisplayToDefault();
   Serial.printf("screen index from clock %i\n", screenIndex);
   clockMillis = millis();
   render();

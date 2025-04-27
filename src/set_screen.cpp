@@ -2,6 +2,7 @@
 
 void SetScreen::setup()
 {
+  setDisplayToDefault();
   render();
 }
 

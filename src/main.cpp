@@ -161,6 +161,15 @@ void printButton(short padding, short radius, const char *text)
   display.setTextColor(WHITE);
 }
 
+void setDisplayToDefault()
+{
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setTextWrap(false);
+}
+
 void saveCredentials()
 {
   preferences.begin("credentials", false);
@@ -189,7 +198,6 @@ bool connectToScreen()
   }
   display.clearDisplay();
   display.setTextColor(WHITE);
-  // display.dim(true); // TODO: investigate if this should be a setting or if its too little a difference to matter
   display.setCursor(0, 0);
   return true;
 }
@@ -253,12 +261,13 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
     return false;
   }
   Serial.println("Wifi connected");
-  if (!trySaved){
+  if (!trySaved)
+  {
     strncpy(ssid, enterSsid, sizeof(ssid) - 1);
     strncpy(password, enterPassword, sizeof(password) - 1);
     saveCredentials();
   }
-    
+
   if (tryNtp)
     connectToNtp();
   return true;

@@ -2,6 +2,7 @@
 
 void AlarmScreen::setup()
 {
+    setDisplayToDefault();
     Serial.printf("screen index from alarm %i\n", screenIndex);
     render();
 }

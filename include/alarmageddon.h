@@ -38,6 +38,7 @@ void printButton(short padding, short radius, const char *text);
 bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved = false, bool tryNtp = true);
 void saveCredentials();
 void loadCredentials();
+void setDisplayToDefault();
 
 // base class
 class MenuScreen
@@ -180,6 +181,20 @@ private:
     unsigned short topIndex = 0;
     char ssidBuffer[16][17];
     short length;
+    const unsigned char wifi_sig1[8] PROGMEM = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00};
+    const unsigned char wifi_sig2[8] PROGMEM = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0xa0, 0x00};
+    const unsigned char wifi_sig3[8] PROGMEM = {
+        0x00, 0x00, 0x00, 0x08, 0x08, 0x28, 0xa8, 0x00};
+    const unsigned char wifi_sig4[8] PROGMEM = {
+        0x02, 0x02, 0x02, 0x0a, 0x0a, 0x2a, 0xaa, 0x00};
+    const unsigned char *wifiSig[4] = {
+        wifi_sig1,
+        wifi_sig2,
+        wifi_sig3,
+        wifi_sig4};
+
 #if defined(HEIGHT_64)
     unsigned short visibleCount = 7;
 #else
@@ -188,6 +203,7 @@ private:
     short scanStatus = -2;
     short scanStatusPrevious = -2;
     int min(int a, int b);
+    short rssiToBars(int rssi);
     void populateList();
 
 public:
@@ -204,10 +220,11 @@ class PasswordScreen : public MenuScreen
 private:
     const char charList[47] = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./\\";
     const char charListShifted[48] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}:\"<>?|";
-    const char charListButtons[5][10] = {"Space", "Backspace", "Shift", "Accept", "Back"};
+    const char charListButtons[6][10] = {"Space", "Backspace", "Shift", "Capslock", "Accept", "Back"};
     const short visibleCharCount = 10;
     bool inScrollable = true;
     bool isShifted = false;
+    bool isCapsLocked = false;
     char passwordPreview[64];
     short charListScroll = 0;
     short selectedIndex = 0;
