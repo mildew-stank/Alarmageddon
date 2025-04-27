@@ -1,10 +1,9 @@
-// TODO: password page
-// uniform progress bar animations on wifi, ntp, & ap scan
-// missing clock page needs investigation. maybe happens when playing with contorls at start, or booting too fast
+// TODO: uniform progress bar animations on wifi, ntp, & ap scan
+// missing clock page needs investigation. maybe happens when playing with contorls at start, or booting too fast, or memory leak that has been fixed?
 // my bedounce time is massive, bad button? seems so
-// when wifi fails we're stuck rn
-// when ntp fails stuck
-// alarm page is fake, settings page is fake
+// alarm can be set but nothing activates it, so remake the current alarm function with current hardware and implement
+// have a clock set in settings too, or if its on the clock screen have settings contain a wifi sync button. i dont want people accidentally setting the clock too easily, specially if the button is also the stop alarm button when required
+// settings page is fake
 // wacky ssids and passwords could possibly cause problems idk
 
 #include "alarmageddon.h"
@@ -45,6 +44,7 @@ short buttonStatePrevious = 0;
 unsigned short note = 0;
 unsigned short screenIndex = 0;
 bool alarmOn = false;
+bool alarmSet = false;
 char ssid[32];     // NOTE: do these two need an extra for null termination?
 char password[64]; //
 

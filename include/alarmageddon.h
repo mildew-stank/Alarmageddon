@@ -28,6 +28,7 @@ extern unsigned short screenIndex;
 extern MenuScreen *container[6];
 extern char ssid[32];
 extern char password[64];
+extern bool alarmSet;
 
 // helper functions
 int getCenteredCursorX(const char *text);
