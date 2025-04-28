@@ -362,6 +362,7 @@ void handleInput()
 
 void setup()
 {
+  loadSettings();
   Serial.begin(921600);
   pinMode(buttonPin, INPUT);
   pinMode(BUILTIN_LED, OUTPUT);
@@ -372,7 +373,6 @@ void setup()
   // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
   // startEspNow();
   container[0]->setup();
-  loadSettings();
 }
 
 void loop()
