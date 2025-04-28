@@ -26,13 +26,10 @@ void PasswordScreen::render()
     int16_t x, y;
     uint16_t w, h;
 
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.setTextSize(1);
+    setDisplayToDefault();
     display.setTextSize(titleSize);
     printCenteredTextX("Password\n");
     display.setTextSize(2);
-    display.setTextWrap(false);
     if (inScrollable)
     {
         for (short i = 0; i < visibleCharCount; i++)
@@ -66,7 +63,6 @@ void PasswordScreen::render()
         printCenteredTextX(charListButtons[selectedIndex]);
         // printButton(4, 4, charListButtons[selectedIndex]); // NOTE: i have no pixels to spare but this might look good on a larger screen
     }
-    display.setTextWrap(true);
     display.setTextColor(WHITE);
     display.println(""); // for the newline
     display.setTextSize(1);

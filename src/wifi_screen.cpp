@@ -2,7 +2,6 @@
 
 void WifiScreen::setup()
 {
-  setDisplayToDefault();
   wifiStatus = WiFi.status();
   wifiStatusPrevious = WiFi.status();
   Serial.printf("SETUP - Wifi status: %i\n", wifiStatus);
@@ -23,10 +22,8 @@ void WifiScreen::loop()
 void WifiScreen::render()
 {
   // title
-  display.clearDisplay();
-  display.setCursor(0, 0);
+  setDisplayToDefault();
   display.setTextSize(titleSize);
-  display.setTextColor(WHITE);
   Serial.printf("WIFI TITLE PRINT!!! titleSize = %i CursorY = %i CursorX = %i\n", titleSize, display.getCursorY(), display.getCursorX());
   printCenteredTextX("Wifi\n");
   if (wifiStatus == WL_CONNECTED)

@@ -2,8 +2,6 @@
 
 void AlarmScreen::setup()
 {
-    setDisplayToDefault(); // TODO: reduce redundacy with this and in render for all screens. i put this here as a failsafe bc i know i got some stuff wacked in other screens
-    Serial.printf("screen index from alarm %i\n", screenIndex);
     render();
 }
 
@@ -17,20 +15,18 @@ void AlarmScreen::render()
     int16_t x, y;
     uint16_t w, h;
 
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.setTextColor(WHITE);
+    setDisplayToDefault();
     display.setTextSize(titleSize);
     printCenteredTextX("Alarm\n");
     display.setTextSize(2);
-    centeredX = getCenteredCursorFormattedX(9, "%02i:%02i:00", hour, minute);
+    centeredX = getCenteredCursorFormattedX(9, "%02i:%02i:00", alarmHour, alarmMinute);
     display.setCursor(centeredX, display.getCursorY());
     if (selectionIndex == 1)
     {
         display.fillRect(display.getCursorX() - 1, display.getCursorY() - 1, 24, 16, WHITE);
         display.setTextColor(BLACK);
     }
-    display.printf("%02i", hour);
+    display.printf("%02i", alarmHour);
     display.setTextColor(WHITE);
     display.print(":");
     if (selectionIndex == 2)
@@ -38,7 +34,7 @@ void AlarmScreen::render()
         display.fillRect(display.getCursorX() - 1, display.getCursorY() - 1, 24, 16, WHITE);
         display.setTextColor(BLACK);
     }
-    display.printf("%02i", minute);
+    display.printf("%02i", alarmMinute);
     display.setTextColor(WHITE);
     display.println(":00");
     display.setTextSize(1);
@@ -67,9 +63,9 @@ void AlarmScreen::left()
         return;
     }
     else if (selectionIndex == 1)
-        hour = wrapNumber(--hour, 24);
+        alarmHour = wrapNumber(--alarmHour, 24);
     else if (selectionIndex == 2)
-        minute = wrapNumber(--minute, 60);
+        alarmMinute = wrapNumber(--alarmMinute, 60);
     else if (selectionIndex == 3)
         alarmSet = !alarmSet;
     render();
@@ -83,9 +79,9 @@ void AlarmScreen::right()
         return;
     }
     else if (selectionIndex == 1)
-        hour = wrapNumber(++hour, 24);
+        alarmHour = wrapNumber(++alarmHour, 24);
     else if (selectionIndex == 2)
-        minute = wrapNumber(++minute, 60);
+        alarmMinute = wrapNumber(++alarmMinute, 60);
     else if (selectionIndex == 3)
         alarmSet = !alarmSet;
     render();

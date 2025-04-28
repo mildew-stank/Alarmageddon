@@ -2,7 +2,6 @@
 
 void ApListScreen::setup()
 {
-  setDisplayToDefault();
   selectedIndex = 0;
   topIndex = 0;
   WiFi.disconnect(); // scanNetworks won't work if we tried to connect to something with bad credentials, so make sure we're disconnected
@@ -25,10 +24,8 @@ void ApListScreen::loop()
 
 void ApListScreen::render()
 {
-  display.clearDisplay();
-  display.setCursor(0, 0);
+  setDisplayToDefault();
   display.setTextSize(titleSize);
-  display.setTextColor(WHITE);
   if (length > 1)
     printCenteredTextX("AP List");
   else

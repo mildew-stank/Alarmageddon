@@ -32,6 +32,8 @@ extern char password[64];
 extern bool alarmSet;
 extern bool is24Hour;
 extern bool displaysSeconds;
+extern unsigned short alarmHour;
+extern unsigned short alarmMinute;
 
 // helper functions
 int getCenteredCursorX(const char *text);
@@ -100,8 +102,6 @@ class AlarmScreen : public MenuScreen
 {
 private:
     short selectionIndex = 0;
-    short hour = 0;
-    short minute = 0;
     char status[2][4] = {"Off", "On"};
 
 public:

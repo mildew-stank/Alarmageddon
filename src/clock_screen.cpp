@@ -34,10 +34,11 @@ void ClockScreen::render()
   }
   else
   {
-    int hour = (timeData.tm_hour > 12) ? timeData.tm_hour - 12 : timeData.tm_hour;
-    const char *meridian = (timeData.tm_hour > 12) ? "PM" : "AM";
+    int hour = timeData.tm_hour % 12;
+    const char *meridian = (timeData.tm_hour >= 12) ? "PM" : "AM";
 
-    hour = (hour == 0) ? 12 : hour;
+    if (hour == 0)
+      hour = 12;
     if (displaysSeconds)
     {
       printfCenteredTextX(10, "%i:%02i:%02i\n", hour, timeData.tm_min, timeData.tm_sec);
@@ -46,7 +47,7 @@ void ClockScreen::render()
     }
     else
     {
-      printfCenteredTextX(7, "%i:%02i\n", hour, timeData.tm_min, timeData.tm_sec);
+      printfCenteredTextX(7, "%i:%02i", hour, timeData.tm_min, timeData.tm_sec);
       display.setTextSize(1);
       display.print(meridian);
     }
