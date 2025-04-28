@@ -27,7 +27,7 @@ extern tm timeData;
 extern unsigned short screenIndex;
 extern unsigned short visibleCount;
 extern MenuScreen *container[6];
-extern char ssid[32];
+extern char ssid[33];
 extern char password[64];
 extern bool alarmSet;
 extern bool is24Hour;
@@ -46,6 +46,7 @@ void setDisplayToDefault();
 void setActiveScreen(int nextIndex);
 void saveCredentials();
 void loadCredentials();
+void saveSettings();
 
 enum ScreenIndex
 {
@@ -103,6 +104,7 @@ class AlarmScreen : public MenuScreen
 private:
     short selectionIndex = 0;
     char status[2][4] = {"Off", "On"};
+    short cycleLength = 24;
 
 public:
     void setup() override;

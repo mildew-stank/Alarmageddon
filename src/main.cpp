@@ -51,8 +51,8 @@ bool alarmOn = false;
 bool alarmSet = false;
 bool is24Hour = true;
 bool displaysSeconds = true;
-char ssid[32];     // NOTE: do these two need an extra for null termination?
-char password[64]; //
+char ssid[33];
+char password[64];
 
 ClockScreen cs;
 AlarmScreen as;
@@ -362,13 +362,13 @@ void handleInput()
 
 void setup()
 {
-  loadSettings();
   Serial.begin(921600);
   pinMode(buttonPin, INPUT);
   pinMode(BUILTIN_LED, OUTPUT);
   knob.attachHalfQuad(encoderPinA, encoderPinB);
   if (!connectToScreen())
     return; // this is catastrophic
+  loadSettings();
   connectToWifi("", "", true);
   // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
   // startEspNow();

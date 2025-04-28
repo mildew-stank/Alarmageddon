@@ -1,7 +1,5 @@
 #include "alarmageddon.h"
 
-void saveSettings();
-
 void SettingsScreen::setup()
 {
   render();
