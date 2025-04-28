@@ -47,7 +47,6 @@ void ApListScreen::render()
       isWhite = false;
     }
     display.setCursor(10, (i + titleSize) * 8); // x is 10 for 2 padding + 8x8 icon
-    display.setTextWrap(false);
     if (currentIndex > 0)
     {
       short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
@@ -56,9 +55,7 @@ void ApListScreen::render()
     }
     display.setTextColor(isWhite);
     display.print(ssidBuffer[currentIndex]);
-    display.setTextWrap(true);
   }
-  display.setTextColor(WHITE); // put this back to default for the next screen
   display.display();
 }
 

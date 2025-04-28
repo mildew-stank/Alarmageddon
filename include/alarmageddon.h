@@ -14,7 +14,7 @@ class MenuScreen;
 class ClockScreen;
 class AlarmScreen;
 class WifiScreen;
-class SetScreen;
+class SettingsScreen;
 class ApListScreen;
 class PasswordScreen;
 
@@ -25,11 +25,13 @@ extern const unsigned short screenHeight;
 extern Adafruit_SSD1306 display;
 extern tm timeData;
 extern unsigned short screenIndex;
+extern unsigned short visibleCount;
 extern MenuScreen *container[6];
 extern char ssid[32];
 extern char password[64];
 extern bool alarmSet;
 extern bool is24Hour;
+extern bool displaysSeconds;
 
 // helper functions
 int getCenteredCursorX(const char *text);
@@ -126,7 +128,7 @@ public:
     void select() override;
 };
 
-class SetScreen : public MenuScreen
+class SettingsScreen : public MenuScreen
 {
 private:
     const unsigned char epd_bitmap_weightoftheworldSMOL[1024] PROGMEM = {
@@ -195,10 +197,8 @@ private:
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x4a, 0x08, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x22, 0x44, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     const char optionsList[4][16] = {"Back", "Set time", "24 Hour", "Display seconds"};
-    bool displaysSeconds = true;
     unsigned short topIndex = 0;
     unsigned short selectedIndex = 0;
-    unsigned short visibleCount = 6;
 
 public:
     void setup() override;
@@ -229,12 +229,6 @@ private:
         wifi_sig2,
         wifi_sig3,
         wifi_sig4};
-
-#if defined(HEIGHT_64)
-    unsigned short visibleCount = 6;
-#else
-    unsigned short visibleCount = 3;
-#endif
     short scanStatus = -2;
     short scanStatusPrevious = -2;
     int min(int a, int b);

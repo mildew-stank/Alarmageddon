@@ -3,7 +3,7 @@
 // my bedounce time is massive, bad button? seems so
 // alarm can be set but nothing activates it, so remake the current alarm function with current hardware and implement
 // have a clock set in settings too, or if its on the clock screen have settings contain a wifi sync button. i dont want people accidentally setting the clock too easily, specially if the button is also the stop alarm button when required
-// settings page is fake
+// clock needs to tick for alarm check in main loop, otherwise alarm wont go off if not on clock screen. make a handleAlarm and have it check every minute or probably second to see if its >= alarm time
 // wacky ssids and passwords could possibly cause problems idk
 
 #include "alarmageddon.h"
@@ -34,25 +34,28 @@ esp_now_peer_info_t peerInfo;
 const char *tzString = "CST6CDT,M3.2.0,M11.1.0";
 const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
 const unsigned short titleSize = 2;
+unsigned short visibleCount = 6;
 #else
 const char *tzString = "EST5EDT,M3.2.0,M11.1.0";                         // NOTE: to be set in settings later on
 const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14}; // NOTE: this too
 const unsigned short titleSize = 1;
+unsigned short visibleCount = 3;
 #endif
 int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
 unsigned short screenIndex = 0;
-bool alarmOn = false;
+bool alarmOn = false; // TODO: these and 4 below should be saved to "settings"
 bool alarmSet = false;
 bool is24Hour = true;
+bool displaysSeconds = true;
 char ssid[32];     // NOTE: do these two need an extra for null termination?
 char password[64]; //
 
 ClockScreen cs;
 AlarmScreen as;
 WifiScreen ws;
-SetScreen ss;
+SettingsScreen ss;
 ApListScreen ls;
 PasswordScreen ps;
 MenuScreen *container[6] = {&cs, &as, &ws, &ss, &ls, &ps};
