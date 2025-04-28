@@ -1,5 +1,7 @@
 #include "alarmageddon.h"
 
+void saveSettings();
+
 void SettingsScreen::setup()
 {
   render();
@@ -83,7 +85,10 @@ void SettingsScreen::select()
   if (!buttonPressed)
     buttonPressed = true;
   else if (selectedIndex == 0)
+  {
     buttonPressed = false;
+    saveSettings();
+  }
   else if (selectedIndex == 2)
     is24Hour = !is24Hour;
   else if (selectedIndex == 3)

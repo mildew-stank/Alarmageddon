@@ -45,9 +45,9 @@ int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
 unsigned short screenIndex = 0;
-unsigned short alarmHour = 0; // TODO: these 6 should be saved to "settings"
+unsigned short alarmHour = 0;
 unsigned short alarmMinute = 0;
-bool alarmOn = false; 
+bool alarmOn = false;
 bool alarmSet = false;
 bool is24Hour = true;
 bool displaysSeconds = true;
@@ -201,6 +201,31 @@ void loadCredentials()
   Serial.printf("loaded %s and %s\n", ssid, password);
 }
 
+void saveSettings()
+{
+  preferences.begin("settings", false);
+  preferences.clear();
+  preferences.putUShort("alarmHour", alarmHour);
+  preferences.putUShort("alarmMinute", alarmMinute);
+  preferences.putBool("alarmOn", alarmOn);
+  preferences.putBool("alarmSet", alarmSet);
+  preferences.putBool("is24Hour", is24Hour);
+  preferences.putBool("displaysSeconds", displaysSeconds);
+  preferences.end();
+}
+
+void loadSettings()
+{
+  preferences.begin("settings", false);
+  alarmHour = preferences.getUShort("alarmHour", 0);
+  alarmMinute = preferences.getUShort("alarmMinute", 0);
+  alarmOn = preferences.getBool("alarmOn", 0);
+  alarmSet = preferences.getBool("alarmSet", 0);
+  is24Hour = preferences.getBool("is24Hour", 0);
+  displaysSeconds = preferences.getBool("displaysSeconds", 0);
+  preferences.end();
+}
+
 bool connectToScreen()
 {
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x03C))
@@ -347,6 +372,7 @@ void setup()
   // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
   // startEspNow();
   container[0]->setup();
+  loadSettings();
 }
 
 void loop()
