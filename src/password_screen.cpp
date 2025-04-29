@@ -1,7 +1,6 @@
 // TODO: maybe having 9 chars on screen with the scroll happening at the center until near the end would make the transition to buttons less jarring. or leave at least 1 on each side so theres SOME padding b4 end. prob 3 padding
 // TODO: prevent passwordIndex from going out of bounds
 // TODO: render just the rightmost part of the password if its too long to fit on screen. either same way as charlist scroll or maybe just offset the cursor with gettextbounds
-// NOTE: i probably should have had left and right be one func called direction
 
 #include "alarmageddon.h"
 
@@ -36,7 +35,7 @@ void PasswordScreen::render()
         {
             short index = charListScroll + i;
             if (index >= sizeof(charList))
-                return;
+                break;
             if (index == selectedIndex)
             {
                 char tempStr[2] = {charListShifted[index], '\0'};
@@ -124,43 +123,23 @@ void PasswordScreen::select()
         return;
     }
     if (selectedIndex == SPACE)
-    {
         passwordPreview[passwordIndex++] = ' ';
-        render();
-    }
     else if (selectedIndex == BACKSPACE && passwordIndex >= 0)
     {
         passwordIndex--;
         passwordPreview[passwordIndex] = ' ';
-        render();
     }
     else if (selectedIndex == SHIFT)
-    {
         isShifted = !isShifted;
-        render();
-    }
     else if (selectedIndex == CAPSLOCK)
-    {
         isCapsLocked = !isCapsLocked;
-        render();
-    }
     else if (selectedIndex == ACCEPT)
     {
         strcpy(password, passwordPreview);
-        Serial.printf("SSID: %s PW: %s\n", ssid, password);
         connectToWifi(ssid, password);
         setActiveScreen(WIFI);
-        // return;
-        display.display();
     }
     else if (selectedIndex == BACK)
-    {
         setActiveScreen(AP_LIST);
-        // return;
-        display.display();
-        // TODO: figure out why i need to run display to show the Scanning... part of ap_list_screen.
-        // i do this in wifi_screen to ap_list_screen too but it was an accident.
-        // figure that out and put the returns and single display() back.
-    }
-    // render();
+    render();
 }

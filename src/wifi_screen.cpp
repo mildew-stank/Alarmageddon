@@ -49,7 +49,7 @@ void WifiScreen::render()
     {
       buttonPressed = false;
       setActiveScreen(AP_LIST);
-      // return;
+      return;
     }
   }
   display.display();

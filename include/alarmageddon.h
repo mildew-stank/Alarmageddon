@@ -226,7 +226,7 @@ private:
     unsigned short selectedIndex = 0;
     unsigned short topIndex = 0;
     char ssidBuffer[64][21];
-    short length;
+    short length = 0;
     const unsigned char wifi_sig1[8] PROGMEM = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00};
     const unsigned char wifi_sig2[8] PROGMEM = {

@@ -15,7 +15,7 @@ void ApListScreen::loop()
   scanStatus = WiFi.scanComplete();
   if (scanStatus != scanStatusPrevious)
   {
-    Serial.printf("Scan status: %i\n", scanStatus);
+    Serial.printf("LOOP - Scan status: %i\n", scanStatus);
     scanStatusPrevious = scanStatus;
     populateList();
     render();
@@ -37,7 +37,7 @@ void ApListScreen::render()
     bool isWhite = true;
 
     if (currentIndex >= length)
-      return;
+      break;
     if (currentIndex == selectedIndex)
     {
       display.fillRect(0, (i + titleSize) * 8 - 1, screenWidth, 9, WHITE); // - 1 for y and + 1 for h to cover the top
@@ -48,7 +48,6 @@ void ApListScreen::render()
     {
       short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
       display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, isWhite);
-      // display.print(WiFi.RSSI(currentIndex - 1));
     }
     display.setTextColor(isWhite);
     display.print(ssidBuffer[currentIndex]);
@@ -116,17 +115,15 @@ void ApListScreen::right()
   }
 }
 
-void ApListScreen::select() // TODO: half the time going back doesnt draw "Wifi" title on wifi screen AND Acess Points DOESNT render b4 scrolling
+void ApListScreen::select()
 {
-  Serial.println(ssidBuffer[selectedIndex]);
   if (selectedIndex == 0)
   {
     WiFi.scanDelete();
     setActiveScreen(WIFI);
-    // display.display();
     return;
   }
   strncpy(ssid, WiFi.SSID(selectedIndex - 1).c_str(), 32);
-  Serial.printf("SSID global: %s buffer: %s WiFi: %s\n", ssid, ssidBuffer[selectedIndex], WiFi.SSID(selectedIndex));
+  WiFi.scanDelete();
   setActiveScreen(PASSWORD);
 }
