@@ -14,7 +14,6 @@ void AlarmScreen::setup()
         isPM = displayTime.second;
         cycleLength = 12;
     }
-    Serial.printf("alarmHour is %i, displayHour is %i\n", alarmHour, displayHour);
     render();
 }
 

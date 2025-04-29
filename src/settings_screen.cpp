@@ -24,7 +24,7 @@ void SettingsScreen::render()
     unsigned short adjustedVisibleCount = (listLength < visibleCount) ? listLength : visibleCount;
 
     display.fillRect(0, titleSize * 8, screenWidth, screenHeight - (titleSize * 8), BLACK);
-    for (unsigned short i = 0; i < adjustedVisibleCount; i++) // NOTE: its up to arma to see if this the less options than visiblecount bug. will need to apply this to ap_scan_list too
+    for (unsigned short i = 0; i < adjustedVisibleCount; i++)
     {
       unsigned short currentIndex = topIndex + i;
       bool isWhite = true;

@@ -225,7 +225,7 @@ class ApListScreen : public MenuScreen
 private:
     unsigned short selectedIndex = 0;
     unsigned short topIndex = 0;
-    char ssidBuffer[64][17];
+    char ssidBuffer[64][21];
     short length;
     const unsigned char wifi_sig1[8] PROGMEM = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00};

@@ -24,7 +24,6 @@ void WifiScreen::render()
   // title
   setDisplayToDefault();
   display.setTextSize(titleSize);
-  Serial.printf("WIFI TITLE PRINT!!! titleSize = %i CursorY = %i CursorX = %i\n", titleSize, display.getCursorY(), display.getCursorX());
   printCenteredTextX("Wifi\n");
   if (wifiStatus == WL_CONNECTED)
   {

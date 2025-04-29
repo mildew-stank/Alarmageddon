@@ -77,16 +77,16 @@ short ApListScreen::rssiToBars(int rssi)
 
 void ApListScreen::populateList()
 {
-  // TODO: add signal str here or something to differentiate matching ssids. max chars on screen should be 21
-  unsigned short maxEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]) - 1; // sizeof ssidBuffer x * y so divide and reserve 1 for "Back"
+  unsigned int amountOfEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]); // sizeof ssidBuffer x * y so divide
+  unsigned short maxEntries = amountOfEntries - 2;                           // and reserve 1 for "Back"
   short scanCount = WiFi.scanComplete();
 
   length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
-  strncpy(ssidBuffer[0], "Back", 16);      // TODO: 16 should be sizeof ssidbuffer[0] - 1 if everything works out
+  strncpy(ssidBuffer[0], "Back", sizeof(ssidBuffer[0]) - 1);
   for (unsigned short i = 1; i < length; i++)
   {
-    strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), 16);
-    ssidBuffer[i][17] = '\0'; // return null terminator to the end of truncated strings
+    strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), sizeof(ssidBuffer[0]) - 1);
+    ssidBuffer[i][amountOfEntries - 1] = '\0'; // return null terminator to the end of truncated strings
   }
 }
 
@@ -123,7 +123,7 @@ void ApListScreen::select() // TODO: half the time going back doesnt draw "Wifi"
   {
     WiFi.scanDelete();
     setActiveScreen(WIFI);
-    // display.display();//
+    // display.display();
     return;
   }
   strncpy(ssid, WiFi.SSID(selectedIndex - 1).c_str(), 32);

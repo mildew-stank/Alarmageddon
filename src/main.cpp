@@ -217,12 +217,11 @@ void setActiveScreen(int nextIndex)
 /*Returns the hour as .first of the pair, and the meridian as .second.*/
 std::pair<unsigned short, bool> convert24To12(unsigned short hour)
 {
-  bool isPM = (timeData.tm_hour >= 12);
-  hour %= 12;
+  bool isPM = (hour >= 12);
 
+  hour %= 12;
   if (hour == 0)
     hour = 12;
-
   return {hour, isPM};
 }
 
