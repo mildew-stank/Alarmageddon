@@ -45,8 +45,8 @@ int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
 unsigned short screenIndex = 0;
-unsigned short alarmHour = 0;
-unsigned short alarmMinute = 0;
+short alarmHour = 0;
+short alarmMinute = 0;
 bool alarmOn = false;
 bool alarmSet = false;
 bool is24Hour = true;
@@ -153,6 +153,38 @@ void printCenteredTextX(const char *text, bool newLine)
     display.println();
 }
 
+void printSelectable(bool isSelected, const char *text)
+{
+  int16_t x, y;
+  uint16_t w, h;
+
+  display.getTextBounds(text, display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
+  display.fillRect(x - 1, y - 1, w + 1, h + 1, isSelected);
+  display.setTextColor(!isSelected);
+  display.print(text);
+  display.setTextColor(WHITE);
+}
+
+/*BufferSize should be the maximum length that the formatted text could be, + 1 for a null terminator.
+Padding is the amount of pixels added to or removed from the bottom and right side of the selector:
+Use 1 for text size 1 and 0 for most above.*/
+void printfSelectable(unsigned short bufferSize, short padding, bool isSelected, const char *text, ...)
+{
+  va_list args;
+  char textBuffer[bufferSize];
+  int16_t x, y;
+  uint16_t w, h;
+
+  va_start(args, text);
+  vsnprintf(textBuffer, bufferSize, text, args);
+  va_end(args);
+  display.getTextBounds(textBuffer, display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
+  display.fillRect(x - 1, y - 1, w + padding, h + padding, isSelected);
+  display.setTextColor(!isSelected);
+  display.print(textBuffer);
+  display.setTextColor(WHITE);
+}
+
 void printButton(short padding, short radius, const char *text)
 {
   unsigned short xCursor = display.getCursorX() - padding / 2;
@@ -182,6 +214,25 @@ void setActiveScreen(int nextIndex)
   container[screenIndex]->setup();
 }
 
+/*Returns the hour as .first of the pair, and the meridian as .second.*/
+std::pair<unsigned short, bool> convert24To12(unsigned short hour)
+{
+  bool isPM = (timeData.tm_hour >= 12);
+  hour %= 12;
+
+  if (hour == 0)
+    hour = 12;
+
+  return {hour, isPM};
+}
+
+unsigned short convert12To24(unsigned short hour, bool isPM)
+{
+  if (hour == 12)
+    return isPM ? 12 : 0;
+  return isPM ? hour + 12 : hour;
+}
+
 void saveCredentials()
 {
   preferences.begin("credentials", false);
@@ -194,7 +245,7 @@ void saveCredentials()
 
 void loadCredentials()
 {
-  preferences.begin("credentials", false);
+  preferences.begin("credentials", true);
   strncpy(ssid, preferences.getString("ssid", "").c_str(), sizeof(ssid) - 1);
   strncpy(password, preferences.getString("password", "").c_str(), sizeof(password) - 1);
   preferences.end();
@@ -205,8 +256,8 @@ void saveSettings()
 {
   preferences.begin("settings", false);
   preferences.clear();
-  preferences.putUShort("alarmHour", alarmHour);
-  preferences.putUShort("alarmMinute", alarmMinute);
+  preferences.putShort("alarmHour", alarmHour);
+  preferences.putShort("alarmMinute", alarmMinute);
   preferences.putBool("alarmOn", alarmOn);
   preferences.putBool("alarmSet", alarmSet);
   preferences.putBool("is24Hour", is24Hour);
@@ -216,9 +267,9 @@ void saveSettings()
 
 void loadSettings()
 {
-  preferences.begin("settings", false);
-  alarmHour = preferences.getUShort("alarmHour", 0);
-  alarmMinute = preferences.getUShort("alarmMinute", 0);
+  preferences.begin("settings", true);
+  alarmHour = preferences.getShort("alarmHour", 0);
+  alarmMinute = preferences.getShort("alarmMinute", 0);
   alarmOn = preferences.getBool("alarmOn", 0);
   alarmSet = preferences.getBool("alarmSet", 0);
   is24Hour = preferences.getBool("is24Hour", 0);
@@ -372,7 +423,7 @@ void setup()
   connectToWifi("", "", true);
   // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
   // startEspNow();
-  container[0]->setup();
+  container[CLOCK]->setup();
 }
 
 void loop()

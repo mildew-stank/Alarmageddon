@@ -3,7 +3,6 @@
 void ClockScreen::setup()
 {
   setDisplayToDefault();
-  Serial.printf("screen index from clock %i\n", screenIndex);
   clockMillis = millis();
   render();
 }
@@ -34,20 +33,18 @@ void ClockScreen::render()
   }
   else
   {
-    int hour = timeData.tm_hour % 12;
-    const char *meridian = (timeData.tm_hour >= 12) ? "PM" : "AM";
+    std::pair<unsigned short, bool> displayTime = convert24To12(timeData.tm_hour);
+    const char *meridian = (displayTime.second) ? "PM" : "AM";
 
-    if (hour == 0)
-      hour = 12;
     if (displaysSeconds)
     {
-      printfCenteredTextX(10, "%i:%02i:%02i\n", hour, timeData.tm_min, timeData.tm_sec);
+      printfCenteredTextX(10, "%i:%02i:%02i\n", displayTime.first, timeData.tm_min, timeData.tm_sec);
       display.setTextSize(1);
       printCenteredTextX(meridian);
     }
     else
     {
-      printfCenteredTextX(7, "%i:%02i", hour, timeData.tm_min, timeData.tm_sec);
+      printfCenteredTextX(7, "%i:%02i", displayTime.first, timeData.tm_min, timeData.tm_sec);
       display.setTextSize(1);
       display.print(meridian);
     }

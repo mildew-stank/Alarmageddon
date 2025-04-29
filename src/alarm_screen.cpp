@@ -1,10 +1,20 @@
 #include "alarmageddon.h"
 
-char meridian[2][3] = {"AM", "PM"};
-
 void AlarmScreen::setup()
 {
-    cycleLength = (is24Hour) ? 24 : 13; // 13 because we will use modulo // TODO: test this
+    if (is24Hour)
+    {
+        displayHour = alarmHour;
+        cycleLength = 24;
+    }
+    else
+    {
+        std::pair<unsigned short, bool> displayTime = convert24To12(alarmHour);
+        displayHour = displayTime.first;
+        isPM = displayTime.second;
+        cycleLength = 12;
+    }
+    Serial.printf("alarmHour is %i, displayHour is %i\n", alarmHour, displayHour);
     render();
 }
 
@@ -21,67 +31,74 @@ void AlarmScreen::render()
     setDisplayToDefault();
     display.setTextSize(titleSize);
     printCenteredTextX("Alarm\n");
-    display.setTextSize(2);
-    if (displaysSeconds)
+    display.setTextSize(2 + !displaysSeconds);
+    if (is24Hour)
     {
-        if (is24Hour)
-            centeredX = getCenteredCursorFormattedX(9, "%02i:%02i:00", alarmHour, alarmMinute);
+        if (displaysSeconds)
+        {
+            // 24HMS
+            centeredX = getCenteredCursorX("00:00:00");
+            display.setCursor(centeredX, display.getCursorY());
+            printfSelectable(3, false, selectionIndex == 1, "%02i", displayHour);
+            display.print(":");
+            printfSelectable(3, false, selectionIndex == 2, "%02i", alarmMinute);
+            display.println(":00");
+            display.setTextSize(1);
+            centeredX = getCenteredCursorX(status[alarmSet]);
+            display.setCursor(centeredX, display.getCursorY());
+            printSelectable(selectionIndex == 3, status[alarmSet]);
+        }
         else
-            centeredX = getCenteredCursorFormattedX(9, "%i:%02i:00", alarmHour, alarmMinute);
+        {
+            // 24HM
+            centeredX = getCenteredCursorX("00:00");
+            display.setCursor(centeredX, display.getCursorY());
+            printfSelectable(3, 0, selectionIndex == 1, "%02i", displayHour);
+            display.print(":");
+            printfSelectable(3, 0, selectionIndex == 2, "%02i", alarmMinute);
+            display.setTextSize(1);
+            printSelectable(selectionIndex == 3, status[alarmSet]);
+        }
     }
     else
     {
-        if (is24Hour)
-            centeredX = getCenteredCursorFormattedX(6, "%02i:%02i", alarmHour, alarmMinute);
-        else
-            centeredX = getCenteredCursorFormattedX(6, "%i:%02i", alarmHour, alarmMinute);
-    }
-    display.setCursor(centeredX, display.getCursorY());
-    if (selectionIndex == 1)
-    {
-        display.fillRect(display.getCursorX() - 1, display.getCursorY() - 1, 24, 16, WHITE);
-        display.setTextColor(BLACK);
-    }
-    display.printf("%02i", alarmHour);
-    display.setTextColor(WHITE);
-    display.print(":");
-    if (selectionIndex == 2)
-    {
-        display.fillRect(display.getCursorX() - 1, display.getCursorY() - 1, 24, 16, WHITE);
-        display.setTextColor(BLACK);
-    }
-    display.printf("%02i", alarmMinute);
-    display.setTextColor(WHITE);
-    if (displaysSeconds)
-        display.println(":00\n");
-    display.setTextSize(1);
-    // TODO: 12h, hm is good. 12h hms is missing status. 24h hm has status under title not time. 24h hms missing status.
-    if (!is24Hour)
-    {
-        Serial.println(display.getCursorX());//
-        display.printf("%s", meridian[0]);
-        if (!displaysSeconds)
+        if (displaysSeconds)
         {
-            display.setTextSize(2); // TODO: try \n\n instead
-            display.println("");
+            // 12HMS
+            centeredX = getCenteredCursorFormattedX(9, "%i:00:00", displayHour);
+            display.setCursor(centeredX, display.getCursorY());
+            printfSelectable(3, 0, selectionIndex == 1, "%i", displayHour);
+            display.print(":");
+            printfSelectable(3, 0, selectionIndex == 2, "%02i", alarmMinute);
+            display.println(":00");
             display.setTextSize(1);
+            centeredX = getCenteredCursorFormattedX(7, "%s %s", meridian[0], status[alarmSet]);
+            display.setCursor(centeredX, display.getCursorY());
+            printSelectable(selectionIndex == 3, meridian[isPM]);
+            display.print(" ");
+            printSelectable(selectionIndex == 4, status[alarmSet]);
+        }
+        else
+        {
+            // 12HM
+            centeredX = getCenteredCursorFormattedX(7, "%i:00", displayHour);
+            display.setCursor(centeredX, display.getCursorY());
+            printfSelectable(3, 0, selectionIndex == 1, "%i", displayHour);
+            display.print(":");
+            printfSelectable(3, 0, selectionIndex == 2, "%02i", alarmMinute);
+            display.setTextSize(1);
+            short snapshotX = display.getCursorX();
+            printSelectable(selectionIndex == 3, meridian[isPM]);
+            display.setCursor(snapshotX, display.getCursorY() + 14);
+            printSelectable(selectionIndex == 4, status[alarmSet]);
         }
     }
-    centeredX = getCenteredCursorX(status[alarmSet]);
-    display.setCursor(centeredX, 24); // TODO: dont use absolute value
-    if (selectionIndex == 3)
-    {
-        display.getTextBounds(status[alarmSet], display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
-        display.fillRect(display.getCursorX() - 1, display.getCursorY() - 1, w + 1, h + 1, WHITE);
-        display.setTextColor(BLACK);
-    }
-    printCenteredTextX(status[alarmSet]);
     display.display();
 }
 
-int wrapNumber(int number, int limit)
+int AlarmScreen::wrapNumber(int number, int min, int max)
 {
-    return (number % limit + limit) % limit;
+    return ((number - min + max) % max) + min;
 }
 
 void AlarmScreen::left()
@@ -92,10 +109,14 @@ void AlarmScreen::left()
         return;
     }
     else if (selectionIndex == 1)
-        alarmHour = wrapNumber(--alarmHour, cycleLength);
+        displayHour = wrapNumber(--displayHour, !is24Hour, cycleLength);
     else if (selectionIndex == 2)
-        alarmMinute = wrapNumber(--alarmMinute, 60);
-    else if (selectionIndex == 3)
+        alarmMinute = wrapNumber(--alarmMinute, 0, 60);
+    else if (selectionIndex == 3 && is24Hour)
+        alarmSet = !alarmSet;
+    else if (selectionIndex == 3 && !is24Hour)
+        isPM = !isPM;
+    else if (selectionIndex == 4)
         alarmSet = !alarmSet;
     render();
 }
@@ -108,10 +129,14 @@ void AlarmScreen::right()
         return;
     }
     else if (selectionIndex == 1)
-        alarmHour = wrapNumber(++alarmHour, cycleLength);
+        displayHour = wrapNumber(++displayHour, !is24Hour, cycleLength);
     else if (selectionIndex == 2)
-        alarmMinute = wrapNumber(++alarmMinute, 60);
-    else if (selectionIndex == 3)
+        alarmMinute = wrapNumber(++alarmMinute, 0, 60);
+    else if (selectionIndex == 3 && is24Hour)
+        alarmSet = !alarmSet;
+    else if (selectionIndex == 3 && !is24Hour)
+        isPM = !isPM;
+    else if (selectionIndex == 4)
         alarmSet = !alarmSet;
     render();
 }
@@ -119,6 +144,11 @@ void AlarmScreen::right()
 void AlarmScreen::select()
 {
     selectionIndex++;
-    selectionIndex %= 4;
+    selectionIndex %= 4 + !is24Hour;
+    if (selectionIndex == 0)
+    {
+        alarmHour = (is24Hour) ? displayHour : convert12To24(displayHour, isPM); // keep the global and stored variable in 24h format
+        saveSettings();
+    }
     render();
 }

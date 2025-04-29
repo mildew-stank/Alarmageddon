@@ -1,13 +1,13 @@
 #ifndef ALARMAGEDDON_H
 #define ALARMAGEDDON_H
 
+#include <utility>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <ESP32Encoder.h>
 #include <esp_now.h>
 #include <Preferences.h>
 #include <WiFi.h>
-// #include <time.h>
 
 // forward declarations for screen classes
 class MenuScreen;
@@ -32,18 +32,22 @@ extern char password[64];
 extern bool alarmSet;
 extern bool is24Hour;
 extern bool displaysSeconds;
-extern unsigned short alarmHour;
-extern unsigned short alarmMinute;
+extern short alarmHour;
+extern short alarmMinute;
 
 // helper functions
 int getCenteredCursorX(const char *text);
 int getCenteredCursorFormattedX(unsigned short bufferSize, const char *text, ...);
 void printfCenteredTextX(unsigned short bufferSize, const char *text, ...);
 void printCenteredTextX(const char *text, bool newLine = false);
+void printSelectable(bool isSelected, const char *text);
+void printfSelectable(unsigned short bufferSize, short padding, bool isSelected, const char *text, ...);
 void printButton(short padding, short radius, const char *text);
 bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved = false, bool tryNtp = true);
 void setDisplayToDefault();
 void setActiveScreen(int nextIndex);
+std::pair<unsigned short, bool> convert24To12(unsigned short hour);
+unsigned short convert12To24(unsigned short hour, bool isPM);
 void saveCredentials();
 void loadCredentials();
 void saveSettings();
@@ -103,8 +107,13 @@ class AlarmScreen : public MenuScreen
 {
 private:
     short selectionIndex = 0;
+    short displayHour = 0;
+    short displayMinute = 0;
     char status[2][4] = {"Off", "On"};
+    char meridian[2][3] = {"AM", "PM"};
+    bool isPM = false;
     short cycleLength = 24;
+    int wrapNumber(int number, int min, int max);
 
 public:
     void setup() override;
