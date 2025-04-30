@@ -1,4 +1,3 @@
-// TODO: maybe having 9 chars on screen with the scroll happening at the center until near the end would make the transition to buttons less jarring. or leave at least 1 on each side so theres SOME padding b4 end. prob 3 padding
 // TODO: prevent passwordIndex from going out of bounds
 // TODO: render just the rightmost part of the password if its too long to fit on screen. either same way as charlist scroll or maybe just offset the cursor with gettextbounds
 
@@ -57,7 +56,7 @@ void PasswordScreen::render()
         int centeredX = getCenteredCursorX(charListButtons[selectedIndex]);
 
         display.getTextBounds(charListButtons[selectedIndex], display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
-        display.fillRect(centeredX - 1, y - 1, w, h + 1, WHITE);
+        display.fillRect(centeredX - 1, y - 1, w, h, WHITE);
         display.setTextColor(BLACK);
         printCenteredTextX(charListButtons[selectedIndex]);
         // printButton(4, 4, charListButtons[selectedIndex]); // NOTE: i have no pixels to spare but this might look good on a larger screen
@@ -79,8 +78,8 @@ void PasswordScreen::left()
             selectedIndex = sizeof(charListButtons) / sizeof(charListButtons[0]) - 1;
             inScrollable = false;
         }
-        else if (selectedIndex < charListScroll)
-            charListScroll = selectedIndex; // scroll left
+        else if (selectedIndex <= charListScroll + 3 && charListScroll > 0) // 3 character padding
+            charListScroll = selectedIndex - 3;
     }
     else if (selectedIndex < 0) // to characters
     {
@@ -101,8 +100,8 @@ void PasswordScreen::right()
             selectedIndex = 0;
             inScrollable = false;
         }
-        else if (selectedIndex >= charListScroll + visibleCharCount)
-            charListScroll = selectedIndex - visibleCharCount + 1; // scroll right
+        else if (selectedIndex >= charListScroll + visibleCharCount - 4 && selectedIndex < sizeof(charList) - 4)
+            charListScroll = selectedIndex - visibleCharCount - 4;
     }
     else if (selectedIndex > sizeof(charListButtons) / sizeof(charListButtons[0]) - 1) // to characters
     {
@@ -115,7 +114,7 @@ void PasswordScreen::right()
 
 void PasswordScreen::select()
 {
-    if (inScrollable)
+    if (inScrollable && passwordIndex < sizeof(passwordPreview) - 1)
     {
         passwordPreview[passwordIndex++] = (isShifted || isCapsLocked) ? charListShifted[selectedIndex] : charList[selectedIndex];
         isShifted = false;

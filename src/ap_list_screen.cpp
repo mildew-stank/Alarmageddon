@@ -77,7 +77,7 @@ short ApListScreen::rssiToBars(int rssi)
 void ApListScreen::populateList()
 {
   unsigned int amountOfEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]); // sizeof ssidBuffer x * y so divide
-  unsigned short maxEntries = amountOfEntries - 2;                           // and reserve 1 for "Back"
+  unsigned short maxEntries = amountOfEntries - 1;                           // and reserve 1 for "Back"
   short scanCount = WiFi.scanComplete();
 
   length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
