@@ -89,4 +89,8 @@ void ClockScreen::right()
 
 void ClockScreen::select()
 {
+  if (alarmOn)
+  {
+    setAlarmStatus(false);
+  }
 }

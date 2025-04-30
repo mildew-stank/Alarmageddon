@@ -1,10 +1,9 @@
-// TODO: uniform progress bar animations on wifi, ntp, & ap scan
-// missing clock page needs investigation. maybe happens when playing with contorls at start, or booting too fast, or memory leak that has been fixed?
+// TODO: uniform progress animations on wifi, ntp, & ap scan screens
+// determin how often to auto resync if connected to wifi and make a handler for it
+// need a set time, set time zone, and sync time setting/screen
+// need a way to set up the remote and see if its available when/before alarm goes off
 // my bedounce time is massive, bad button? seems so
-// alarm can be set but nothing activates it, so remake the current alarm function with current hardware and implement
-// have a clock set in settings too, or if its on the clock screen have settings contain a wifi sync button. i dont want people accidentally setting the clock too easily, specially if the button is also the stop alarm button when required
-// clock needs to tick for alarm check in main loop, otherwise alarm wont go off if not on clock screen. make a handleAlarm and have it check every minute or probably second to see if its >= alarm time
-// wacky ssids and passwords could possibly cause problems idk
+// wifi passwords with non standard or non u.s. characters cant be entered
 
 #include "alarmageddon.h"
 
@@ -17,6 +16,7 @@ const unsigned short screenWidth = 128;
 const unsigned short encoderPinA = 16;
 const unsigned short encoderPinB = 17;
 const unsigned short buttonPin = 18;
+const unsigned short buzzerPin = 19;
 
 struct struct_message
 {
@@ -62,25 +62,39 @@ ApListScreen ls;
 PasswordScreen ps;
 MenuScreen *container[6] = {&cs, &as, &ws, &ss, &ls, &ps};
 
-void playAlarmMelody()
+void handleAlarm()
 {
-  // TODO: make sure the remote is available before commiting to a certain alarm. redo this whole thing for an active buzzer that just turns on
-  static unsigned long melodyMillis;
-  const int melody[] = {39, 39, 35, 31};
+  // TODO: check if there is a remote available, if so make it so only that can turn this off. prob need new function to handle remote
+  static unsigned long lastCheckTime;
+  static bool triggeredThisMinute = false;
 
-  if (millis() - melodyMillis < 1000 || !alarmOn)
+  if (!alarmSet || millis() - lastCheckTime < 1000)
     return;
-  tone(19, melody[note], 500); // NOTE: i put an active buzzer on the board so this doesnt work it just sounds like a cricket
-  note++;
-  if (note > 3)
-    note = 0;
-  melodyMillis = millis();
+  lastCheckTime = millis();
+  if (timeData.tm_hour == alarmHour && timeData.tm_min == alarmMinute && !triggeredThisMinute && !alarmOn)
+  {
+    setAlarmStatus(true);
+    triggeredThisMinute = true;
+  }
+  if (timeData.tm_min != alarmMinute) // dont trigger more than once per minute
+    triggeredThisMinute = false;
+  if (timeData.tm_hour != alarmHour) // dont leave the alarm on for more than an hour
+    setAlarmStatus(false);
+}
+
+void setAlarmStatus(bool status)
+{
+  // NOTE: currently only the clock screen select method can turn this off
+  Serial.printf("Alarm %s\n", status ? "true" : "false");
+  digitalWrite(buzzerPin, status);
+  alarmOn = status;
 }
 
 void sendData()
 {
-  message.isPressed = true;
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&message, sizeof(message));
+
+  message.isPressed = true;
   if (result == ESP_OK)
   {
     Serial.println("ESP-Now sent");
@@ -414,7 +428,7 @@ void setup()
 {
   Serial.begin(921600);
   pinMode(buttonPin, INPUT);
-  pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
   knob.attachHalfQuad(encoderPinA, encoderPinB);
   if (!connectToScreen())
     return; // this is catastrophic
@@ -428,6 +442,6 @@ void setup()
 void loop()
 {
   handleInput();
-  playAlarmMelody();
+  handleAlarm();
   container[screenIndex]->loop();
 }

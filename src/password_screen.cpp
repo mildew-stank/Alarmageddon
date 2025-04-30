@@ -33,6 +33,7 @@ void PasswordScreen::render()
         for (short i = 0; i < visibleCharCount; i++)
         {
             short index = charListScroll + i;
+            
             if (index >= sizeof(charList))
                 break;
             if (index == selectedIndex)
