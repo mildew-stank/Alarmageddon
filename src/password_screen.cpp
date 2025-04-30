@@ -5,7 +5,6 @@
 
 void PasswordScreen::setup()
 {
-    setDisplayToDefault();
     inScrollable = true;
     isShifted = false;
     charListScroll = 0;
@@ -33,7 +32,7 @@ void PasswordScreen::render()
         for (short i = 0; i < visibleCharCount; i++)
         {
             short index = charListScroll + i;
-            
+
             if (index >= sizeof(charList))
                 break;
             if (index == selectedIndex)
@@ -102,7 +101,7 @@ void PasswordScreen::right()
             inScrollable = false;
         }
         else if (selectedIndex >= charListScroll + visibleCharCount - 4 && selectedIndex < sizeof(charList) - 4)
-            charListScroll = selectedIndex - visibleCharCount - 4;
+            charListScroll = selectedIndex - (visibleCharCount - 4);
     }
     else if (selectedIndex > sizeof(charListButtons) / sizeof(charListButtons[0]) - 1) // to characters
     {

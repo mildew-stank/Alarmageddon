@@ -297,9 +297,7 @@ bool connectToScreen()
     Serial.println("Display failed");
     return false;
   }
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0);
+  setDisplayToDefault();
   return true;
 }
 
