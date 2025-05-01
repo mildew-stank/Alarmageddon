@@ -60,7 +60,8 @@ WifiScreen ws;
 SettingsScreen ss;
 ApListScreen ls;
 PasswordScreen ps;
-MenuScreen *container[6] = {&cs, &as, &ws, &ss, &ls, &ps};
+InitializationScreen is;
+MenuScreen *container[7] = {&cs, &as, &ws, &ss, &ls, &ps, &is};
 
 void handleAlarm()
 {
@@ -434,7 +435,8 @@ void setup()
   connectToWifi("", "", true);
   // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
   // startEspNow();
-  container[CLOCK]->setup();
+  //container[CLOCK]->setup();
+  setActiveScreen(CLOCK); // NOTE: 6 for animation test screen
 }
 
 void loop()

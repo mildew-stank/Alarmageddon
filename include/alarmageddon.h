@@ -17,6 +17,7 @@ class WifiScreen;
 class SettingsScreen;
 class ApListScreen;
 class PasswordScreen;
+class InitializationScreen;
 
 // extern globals from main
 extern const unsigned short titleSize;
@@ -26,7 +27,7 @@ extern Adafruit_SSD1306 display;
 extern tm timeData;
 extern unsigned short screenIndex;
 extern unsigned short visibleCount;
-extern MenuScreen *container[6];
+extern MenuScreen *container[7];
 extern char ssid[33];
 extern char password[64];
 extern bool alarmOn;
@@ -79,7 +80,6 @@ enum PasswordButtons
 class MenuScreen
 {
 public:
-    virtual ~MenuScreen() {};
     virtual void setup() = 0;
     virtual void loop() = 0;
     virtual void render() = 0;
@@ -271,6 +271,20 @@ private:
     short charListScroll = 0;
     short selectedIndex = 0;
     short passwordIndex = 0;
+
+public:
+    void setup() override;
+    void loop() override;
+    void render() override;
+    void left() override;
+    void right() override;
+    void select() override;
+};
+
+class InitializationScreen : public MenuScreen
+{
+//private:
+//    unsigned int timeStamp = 0;
 
 public:
     void setup() override;
