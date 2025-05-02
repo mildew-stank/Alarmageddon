@@ -283,8 +283,11 @@ public:
 
 class InitializationScreen : public MenuScreen
 {
-//private:
-//    unsigned int timeStamp = 0;
+private:
+    // unsigned int timeStamp = 0;
+    unsigned short selectedIndex = 0;
+    unsigned short topIndex = 0;
+    short length = 0;
 
 public:
     void setup() override;

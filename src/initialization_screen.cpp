@@ -25,9 +25,11 @@ const unsigned char *bird[7] = {
     bird6,
     bird7};
 
+const char region[9][10] = {"Africa", "America", "Asia", "Atlantic", "Australia", "Europe", "Indian", "Pacific", "Other"};
+
 void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
 {
-    static unsigned short frame = 0; // NOTE: this needs to be a class if i want multiple indepandant animations starting at frame 0 or a given offset each time
+    static unsigned short frame = 0; // NOTE: this needs to be a class if i want multiple independant animations starting at frame 0 or a given offset each time
     frame = ++frame % frameCount;
     display.drawBitmap(x, y, frames[frame], w, h, WHITE);
 }
@@ -48,20 +50,59 @@ bool requestAnimationFrame(unsigned short frameRate)
 
 void InitializationScreen::setup()
 {
-    display.clearDisplay();
+    render();
 }
 
 void InitializationScreen::loop()
 {
-    if (requestAnimationFrame(8))
+    // if (requestAnimationFrame(8))
+    // {
+    //     display.clearDisplay();
+    //     drawAnimationFrame(bird, 6, 34, 8, 8, 8);
+    //     display.display();
+    // }
+}
+
+void InitializationScreen::render()
+{
+    setDisplayToDefault();
+    display.setTextSize(titleSize);
+    printCenteredTextX("Time Zone\n");
+    display.setTextSize(1);
+    for (unsigned short i = 0; i < visibleCount; i++)
     {
-        display.clearDisplay();
-        drawAnimationFrame(bird, 6, 34, 8, 8, 8);
-        display.display();
+        unsigned short currentIndex = topIndex + i;
+
+        display.setCursor(1, display.getCursorY());
+        printSelectable(currentIndex == selectedIndex, region[currentIndex]);
+        display.println();
+        Serial.println(region[i]);
+    }
+    display.display();
+}
+
+void InitializationScreen::left()
+{
+    if (selectedIndex > 0)
+    {
+        selectedIndex--;
+        if (selectedIndex < topIndex)
+            topIndex--;
+        render();
     }
 }
 
-void InitializationScreen::render() {}
-void InitializationScreen::left() {}
-void InitializationScreen::right() {}
-void InitializationScreen::select() {}
+void InitializationScreen::right()
+{
+    if (selectedIndex < 8)
+    {
+        selectedIndex++;
+        if (selectedIndex >= topIndex + visibleCount)
+            topIndex++;
+        render();
+    }
+}
+
+void InitializationScreen::select()
+{
+}
