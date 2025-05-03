@@ -25,7 +25,37 @@ const unsigned char *bird[7] = {
     bird6,
     bird7};
 
-const char region[9][10] = {"Africa", "America", "Asia", "Atlantic", "Australia", "Europe", "Indian", "Pacific", "Other"};
+// const char region[9][10] = {"Africa", "America", "Asia", "Atlantic", "Australia", "Europe", "Indian", "Pacific", "Other"};
+// TODO: maybe add a custom option? add a utz offset and for dst start and end in mm/ww/dd/hh to be Mm.w.d/h. look up some more eu strings.
+
+const char *tzRegions[] = {
+    "Back",
+    "Africa/Cairo",        // EET-2EEST,M4.5.5/0,M10.5.4/0
+    "America/New York",    // EST5EDT,M3.2.0/2,M11.1.0/2
+    "America/Chicago",     // CST6CDT,M3.2.0/2,M11.1.0/2
+    "America/Denver",      // MST7MDT,M3.2.0/2,M11.1.0/2
+    "America/Los Angeles", // PST8PDT,M3.2.0/2,M11.1.0/2
+    "Europe/Helsinki",     // EET-2EEST,M3.5.0/3,M10.5.0/4
+    "Europe/London",       // GMT0BST,M3.5.0/1,M10.5.0/2
+    "Europe/Berlin",       // CET-1CEST,M3.5.0/2,M10.5.0/3
+    "Asia/Tokyo",          // JST-9
+    "Australia/Sydney",    // AEST-10AEDT,M10.1.0/2,M4.1.0/3
+    "Pacific/Auckland",    // NZST-12NZDT,M9.5.0/2,M4.1.0/3
+    "Custom",
+};
+const char *tzStrings[] = {
+    "EET-2EEST,M4.5.5/0,M10.5.4/0",   // Cairo
+    "EST5EDT,M3.2.0/2,M11.1.0/2",     // New York
+    "CST6CDT,M3.2.0/2,M11.1.0/2",     // Chicago
+    "MST7MDT,M3.2.0/2,M11.1.0/2",     // Denver
+    "PST8PDT,M3.2.0/2,M11.1.0/2",     // Los Angeles
+    "EET-2EEST,M3.5.0/3,M10.5.0/4",   // Helsinki
+    "GMT0BST,M3.5.0/1,M10.5.0/2",     // London
+    "CET-1CEST,M3.5.0/2,M10.5.0/3",   // Berlin
+    "JST-9",                          // Tokyo (no DST)
+    "AEST-10AEDT,M10.1.0/2,M4.1.0/3", // Sydney
+    "NZST-12NZDT,M9.5.0/2,M4.1.0/3",  // Auckland
+};
 
 void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
 {
@@ -74,9 +104,9 @@ void InitializationScreen::render()
         unsigned short currentIndex = topIndex + i;
 
         display.setCursor(1, display.getCursorY());
-        printSelectable(currentIndex == selectedIndex, region[currentIndex]);
+        printSelectable(currentIndex == selectedIndex, tzRegions[currentIndex]);
         display.println();
-        Serial.println(region[i]);
+        // Serial.println(region[i]);
     }
     display.display();
 }
@@ -94,7 +124,7 @@ void InitializationScreen::left()
 
 void InitializationScreen::right()
 {
-    if (selectedIndex < 8)
+    if (selectedIndex < 12) // list size
     {
         selectedIndex++;
         if (selectedIndex >= topIndex + visibleCount)
@@ -105,4 +135,6 @@ void InitializationScreen::right()
 
 void InitializationScreen::select()
 {
+    if (selectedIndex > 1 && selectedIndex < 11)
+        tzString = tzStrings[selectedIndex + 1];
 }

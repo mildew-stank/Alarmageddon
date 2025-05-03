@@ -36,6 +36,7 @@ extern bool is24Hour;
 extern bool displaysSeconds;
 extern short alarmHour;
 extern short alarmMinute;
+extern const char *tzString;
 
 // helper functions
 int getCenteredCursorX(const char *text);
