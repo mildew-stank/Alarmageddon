@@ -14,6 +14,7 @@ void SetClockScreen::setup()
         isPM = displayTime.second;
         cycleLength = 12;
     }
+    selectionIndex = 0; //
     render();
 }
 
@@ -29,7 +30,7 @@ void SetClockScreen::render()
 
     setDisplayToDefault();
     display.setTextSize(titleSize);
-    printCenteredTextX("Alarm\n");
+    printCenteredTextX("Set Time\n");
     display.setTextSize(2 + !displaysSeconds);
     if (is24Hour)
     {
@@ -38,11 +39,11 @@ void SetClockScreen::render()
             // 24HMS
             centeredX = getCenteredCursorX("00:00:00");
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, false, selectionIndex == 1, "%02i", displayHour);
+            printfSelectable(3, false, selectionIndex == 0, "%02i", displayHour);
             display.print(":");
-            printfSelectable(3, false, selectionIndex == 2, "%02i", clockMinute);
-            display.println(":");
-            printfSelectable(3, 0, selectionIndex == 3, "%02i", clockSecond);
+            printfSelectable(3, false, selectionIndex == 1, "%02i", clockMinute);
+            display.print(":");
+            printfSelectable(3, 0, selectionIndex == 2, "%02i", clockSecond);
             // display.setTextSize(1);
             // centeredX = getCenteredCursorX(status[alarmSet]);
             // display.setCursor(centeredX, display.getCursorY());
@@ -53,9 +54,9 @@ void SetClockScreen::render()
             // 24HM
             centeredX = getCenteredCursorX("00:00");
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 1, "%02i", displayHour);
+            printfSelectable(3, 0, selectionIndex == 0, "%02i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", clockMinute);
+            printfSelectable(3, 0, selectionIndex == 1, "%02i", clockMinute);
             // display.setTextSize(1);
             // printSelectable(selectionIndex == 3, status[alarmSet]);
         }
@@ -67,16 +68,17 @@ void SetClockScreen::render()
             // 12HMS
             centeredX = getCenteredCursorFormattedX(9, "%i:00:00", displayHour);
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 1, "%i", displayHour);
+            printfSelectable(3, 0, selectionIndex == 0, "%i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", clockMinute);
-            display.println(":");
-            printfSelectable(3, 0, selectionIndex == 3, "%02i", clockSecond);
+            printfSelectable(3, 0, selectionIndex == 1, "%02i", clockMinute);
+            display.print(":");
+            printfSelectable(3, 0, selectionIndex == 2, "%02i", clockSecond);
             display.setTextSize(1);
             // centeredX = getCenteredCursorFormattedX(7, "%s %s", meridian[0], status[alarmSet]);
             centeredX = getCenteredCursorX(meridian[0]);
+            display.println("\n");
             display.setCursor(centeredX, display.getCursorY());
-            printSelectable(selectionIndex == 4, meridian[isPM]);
+            printSelectable(selectionIndex == 3, meridian[isPM]);
             // display.print(" ");
             // printSelectable(selectionIndex == 4, status[alarmSet]);
         }
@@ -85,12 +87,12 @@ void SetClockScreen::render()
             // 12HM
             centeredX = getCenteredCursorFormattedX(7, "%i:00", displayHour);
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 1, "%i", displayHour);
+            printfSelectable(3, 0, selectionIndex == 0, "%i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", clockMinute);
+            printfSelectable(3, 0, selectionIndex == 1, "%02i", clockMinute);
             display.setTextSize(1);
             short snapshotX = display.getCursorX();
-            printSelectable(selectionIndex == 3, meridian[isPM]);
+            printSelectable(selectionIndex == 2, meridian[isPM]);
             // display.setCursor(snapshotX, display.getCursorY() + 14);
             // printSelectable(selectionIndex == 4, status[alarmSet]);
         }
@@ -101,19 +103,14 @@ void SetClockScreen::render()
 void SetClockScreen::left()
 {
     if (selectionIndex == 0)
-    {
-        container[--screenIndex]->setup();
-        return;
-    }
-    else if (selectionIndex == 1)
         displayHour = wrapNumber(--displayHour, !is24Hour, cycleLength);
-    else if (selectionIndex == 2)
+    else if (selectionIndex == 1)
         clockMinute = wrapNumber(--clockMinute, 0, 60);
-    else if (selectionIndex == 3 && displaysSeconds)
+    else if (selectionIndex == 2 && displaysSeconds)
         clockSecond = wrapNumber(--clockSecond, 0, 60);
-    else if (selectionIndex == 3 && !displaysSeconds)
+    else if (selectionIndex == 2 && !is24Hour)
         isPM = !isPM;
-    else if (selectionIndex == 4)
+    else if (selectionIndex == 3)
         isPM = !isPM;
     render();
 }
@@ -121,19 +118,14 @@ void SetClockScreen::left()
 void SetClockScreen::right()
 {
     if (selectionIndex == 0)
-    {
-        container[++screenIndex]->setup();
-        return;
-    }
-    else if (selectionIndex == 1)
         displayHour = wrapNumber(++displayHour, !is24Hour, cycleLength);
-    else if (selectionIndex == 2)
+    else if (selectionIndex == 1)
         clockMinute = wrapNumber(++clockMinute, 0, 60);
-    else if (selectionIndex == 3 && displaysSeconds)
+    else if (selectionIndex == 2 && displaysSeconds)
         clockSecond = wrapNumber(--clockSecond, 0, 60);
-    else if (selectionIndex == 3 && !displaysSeconds)
+    else if (selectionIndex == 2 && !is24Hour)
         isPM = !isPM;
-    else if (selectionIndex == 4)
+    else if (selectionIndex == 3)
         isPM = !isPM;
     render();
 }
@@ -141,11 +133,12 @@ void SetClockScreen::right()
 void SetClockScreen::select()
 {
     selectionIndex++;
-    selectionIndex %= 4 + !is24Hour;
-    if (selectionIndex == 0)
+    //selectionIndex %= 4 + !is24Hour;
+    if (selectionIndex == 2 + displaysSeconds + !is24Hour)
     {
-        clockHour = (is24Hour) ? displayHour : convert12To24(displayHour, isPM); // keep the global and stored variable in 24h format
-        // saveSettings();
+        clockHour = (is24Hour) ? displayHour : convert12To24(displayHour, isPM); // keep the global and stored variable in 24h format // TODO: figure out what to do with this to apply to clock
+        setActiveScreen(SETTINGS);
+        return;
     }
     render();
 }

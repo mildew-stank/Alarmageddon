@@ -1,4 +1,5 @@
 // TODO: enum for selection numbers
+// maybe put sync time and region in wifi instead of here
 
 #include "alarmageddon.h"
 
@@ -90,9 +91,15 @@ void SettingsScreen::select()
     saveSettings();
   }
   else if (selectedIndex == 1)
+  {
     setActiveScreen(SET_CLOCK);
+    return;
+  }
   else if (selectedIndex == 2)
+  {
     setActiveScreen(REGION);
+    return;
+  }
   else if (selectedIndex == 4)
     is24Hour = !is24Hour;
   else if (selectedIndex == 5)

@@ -1,3 +1,5 @@
+// TODO: going to this page crashed. maybe defiine the string lengths more specifically
+
 #include <alarmageddon.h>
 
 void RegionScreen::setup()
@@ -39,7 +41,7 @@ void RegionScreen::left()
 
 void RegionScreen::right()
 {
-    if (selectedIndex < 12) // list size
+    if (selectedIndex < 15) // list size
     {
         selectedIndex++;
         if (selectedIndex >= topIndex + visibleCount)
@@ -50,6 +52,17 @@ void RegionScreen::right()
 
 void RegionScreen::select()
 {
-    if (selectedIndex > 1 && selectedIndex < 11)
-        tzString = tzStrings[selectedIndex + 1];
+    if (selectedIndex == 0)
+    {
+        setActiveScreen(SETTINGS);
+        return;
+    }
+    else if (selectedIndex == 15)
+        Serial.println("Custom screen"); // TODO: make real custom screen
+    else
+    {
+        Serial.println(tzRegions[selectedIndex]);
+        Serial.println(tzStrings[selectedIndex - 1]);
+        tzString = tzStrings[selectedIndex - 1];
+    }
 }

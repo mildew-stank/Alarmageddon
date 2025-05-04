@@ -70,10 +70,9 @@ enum ScreenIndex
     SETTINGS = 3,
     AP_LIST = 4,
     PASSWORD = 5,
-    SCREEN_COUNT = 6,
-    INIT = 7,
-    SET_CLOCK = 8,
-    REGION = 9
+    INIT = 6,
+    SET_CLOCK = 7,
+    REGION = 8
 };
 
 // base class

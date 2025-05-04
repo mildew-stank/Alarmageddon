@@ -36,8 +36,8 @@ const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
 const unsigned short titleSize = 2;
 unsigned short visibleCount = 6;
 #else
-const char *tzString = "EST5EDT,M3.2.0,M11.1.0";                         // NOTE: to be set in settings later on
-const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14}; // NOTE: this too
+const char *tzString = "EST5EDT,M3.2.0,M11.1.0";                         // TODO: to be set in settings and SAVED
+const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14}; // TODO: this too or something
 const unsigned short titleSize = 1;
 unsigned short visibleCount = 3;
 #endif
