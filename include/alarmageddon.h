@@ -18,6 +18,8 @@ class SettingsScreen;
 class ApListScreen;
 class PasswordScreen;
 class InitializationScreen;
+class SetClockScreen;
+class RegionScreen;
 
 // extern globals from main
 extern const unsigned short titleSize;
@@ -27,13 +29,16 @@ extern Adafruit_SSD1306 display;
 extern tm timeData;
 extern unsigned short screenIndex;
 extern unsigned short visibleCount;
-extern MenuScreen *container[7];
+extern MenuScreen *container[9];
 extern char ssid[33];
 extern char password[64];
 extern bool alarmOn;
 extern bool alarmSet;
 extern bool is24Hour;
 extern bool displaysSeconds;
+extern short clockSecond;
+extern short clockMinute;
+extern short clockHour;
 extern short alarmHour;
 extern short alarmMinute;
 extern const char *tzString;
@@ -52,6 +57,7 @@ void setDisplayToDefault();
 void setActiveScreen(int nextIndex);
 std::pair<unsigned short, bool> convert24To12(unsigned short hour);
 unsigned short convert12To24(unsigned short hour, bool isPM);
+int wrapNumber(int number, int min, int max);
 void saveCredentials();
 void loadCredentials();
 void saveSettings();
@@ -64,17 +70,10 @@ enum ScreenIndex
     SETTINGS = 3,
     AP_LIST = 4,
     PASSWORD = 5,
-    SCREEN_COUNT = 6
-};
-
-enum PasswordButtons
-{
-    SPACE = 0,
-    BACKSPACE = 1,
-    SHIFT = 2,
-    CAPSLOCK = 3,
-    ACCEPT = 4,
-    BACK = 5
+    SCREEN_COUNT = 6,
+    INIT = 7,
+    SET_CLOCK = 8,
+    REGION = 9
 };
 
 // base class
@@ -116,7 +115,6 @@ private:
     char meridian[2][3] = {"AM", "PM"};
     bool isPM = false;
     short cycleLength = 24;
-    int wrapNumber(int number, int min, int max);
 
 public:
     void setup() override;
@@ -210,7 +208,7 @@ private:
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x48, 0x20, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x4a, 0x08, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x22, 0x44, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};*/
-    const char optionsList[4][16] = {"Back", "Set time", "24 Hour", "Display seconds"};
+    const char optionsList[6][16] = {"Back", "Set time", "Set region", "Sync time", "24 hour", "Display seconds"};
     unsigned short topIndex = 0;
     unsigned short selectedIndex = 0;
 
@@ -272,6 +270,15 @@ private:
     short charListScroll = 0;
     short selectedIndex = 0;
     short passwordIndex = 0;
+    enum PasswordButtons
+    {
+        SPACE = 0,
+        BACKSPACE = 1,
+        SHIFT = 2,
+        CAPSLOCK = 3,
+        ACCEPT = 4,
+        BACK = 5
+    };
 
 public:
     void setup() override;
@@ -288,7 +295,77 @@ private:
     // unsigned int timeStamp = 0;
     unsigned short selectedIndex = 0;
     unsigned short topIndex = 0;
-    short length = 0;
+    // short length = 0;
+
+public:
+    void setup() override;
+    void loop() override;
+    void render() override;
+    void left() override;
+    void right() override;
+    void select() override;
+};
+
+class SetClockScreen : public MenuScreen
+{
+private:
+    short selectionIndex = 0;
+    short displayHour = 0;
+    short displayMinute = 0;
+    // char status[2][4] = {"Off", "On"}; // re-use for wifi sync?
+    char meridian[2][3] = {"AM", "PM"};
+    bool isPM = false;
+    short cycleLength = 24;
+
+public:
+    void setup() override;
+    void loop() override;
+    void render() override;
+    void left() override;
+    void right() override;
+    void select() override;
+};
+
+class RegionScreen : public MenuScreen
+{
+private:
+    const char *tzRegions[16] = {
+        "Back",
+        "America/Honolulu",    // HST10
+        "America/Anchorage",   // AKST9AKDT,M3.2.0/2,M11.1.0/2
+        "America/Los Angeles", // PST8PDT,M3.2.0/2,M11.1.0/2
+        "America/Denver",      // MST7MDT,M3.2.0/2,M11.1.0/2
+        "America/Chicago",     // CST6CDT,M3.2.0/2,M11.1.0/2
+        "America/New York",    // EST5EDT,M3.2.0/2,M11.1.0/2
+        "America/Halifax",     // AST4ADT,M3.2.0/2,M11.1.0/2
+        "America/St. John's",  // NST3:30NDT,M3.2.0/2,M11.1.0/2
+        "Europe/London",       // GMT0BST,M3.5.0/1,M10.5.0/2
+        "Australia/Perth",     // AWST-8
+        "Australia/Adelaide",  // ACST-9:30ACDT,M10.1.0/2,M4.1.0/3
+        "Australia/Sydney",    // AEST-10AEDT,M10.1.0/2,M4.1.0/3
+        "Australia/Lord Howe", // LHST-10:30LHDT-11,M10.1.0/2,M4.1.0/2
+        "Pacific/Auckland",    // NZST-12NZDT,M9.5.0/2,M4.1.0/3
+        "Custom",
+    };
+    const char *tzStrings[14] = {
+        "HST10",                                // Honolulu
+        "AKST9AKDT,M3.2.0/2,M11.1.0/2",         // Anchorage
+        "PST8PDT,M3.2.0/2,M11.1.0/2",           // Los Angeles
+        "MST7MDT,M3.2.0/2,M11.1.0/2",           // Denver
+        "CST6CDT,M3.2.0/2,M11.1.0/2",           // Chicago
+        "EST5EDT,M3.2.0/2,M11.1.0/2",           // New York
+        "AST4ADT,M3.2.0/2,M11.1.0/2",           // Halifax
+        "NST3:30NDT,M3.2.0/2,M11.1.0/2",        // St. John's
+        "GMT0BST,M3.5.0/1,M10.5.0/2",           // London
+        "AWST-8",                               // Perth
+        "ACST-9:30ACDT,M10.1.0/2,M4.1.0/3",     // Adelaide
+        "AEST-10AEDT,M10.1.0/2,M4.1.0/3",       // Sydney
+        "LHST-10:30LHDT-11,M10.1.0/2,M4.1.0/2", // Lord Howe
+        "NZST-12NZDT,M9.5.0/2,M4.1.0/3",        // Auckland
+    };
+    unsigned short selectedIndex = 0;
+    unsigned short topIndex = 0;
+    // short length = 0;
 
 public:
     void setup() override;

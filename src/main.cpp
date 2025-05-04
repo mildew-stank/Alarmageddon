@@ -45,6 +45,9 @@ int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
 unsigned short screenIndex = 0;
+short clockSecond = 0;
+short clockMinute = 0;
+short clockHour = 0;
 short alarmHour = 0;
 short alarmMinute = 0;
 bool alarmOn = false;
@@ -61,7 +64,9 @@ SettingsScreen ss;
 ApListScreen ls;
 PasswordScreen ps;
 InitializationScreen is;
-MenuScreen *container[7] = {&cs, &as, &ws, &ss, &ls, &ps, &is};
+SetClockScreen sc;
+RegionScreen rs;
+MenuScreen *container[9] = {&cs, &as, &ws, &ss, &ls, &ps, &is, &sc, &rs};
 
 void handleAlarm()
 {
@@ -245,6 +250,11 @@ unsigned short convert12To24(unsigned short hour, bool isPM)
   if (hour == 12)
     return isPM ? 12 : 0;
   return isPM ? hour + 12 : hour;
+}
+
+int wrapNumber(int number, int min, int max)
+{
+  return ((number - min + max) % max) + min;
 }
 
 void saveCredentials()
@@ -435,7 +445,7 @@ void setup()
   connectToWifi("", "", true);
   // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
   // startEspNow();
-  //container[CLOCK]->setup();
+  // container[CLOCK]->setup();
   setActiveScreen(CLOCK); // NOTE: 6 for animation test screen
 }
 

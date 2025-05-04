@@ -1,3 +1,5 @@
+// TODO: enum for selection numbers
+
 #include "alarmageddon.h"
 
 void SettingsScreen::setup()
@@ -35,9 +37,9 @@ void SettingsScreen::render()
         isWhite = false;
       }
       display.setCursor(10, (i + titleSize) * 8);
-      if (currentIndex > 1)
+      if (currentIndex > 3)
         display.drawRect(display.getCursorX() - 9, display.getCursorY(), 7, 7, WHITE);
-      if ((currentIndex == 2 && is24Hour) || (currentIndex == 3 && displaysSeconds))
+      if ((currentIndex == 4 && is24Hour) || (currentIndex == 5 && displaysSeconds))
         display.fillRect(display.getCursorX() - 7, display.getCursorY() + 2, 3, 3, WHITE);
       display.setTextColor(isWhite);
       display.print(optionsList[currentIndex]);
@@ -87,9 +89,13 @@ void SettingsScreen::select()
     buttonPressed = false;
     saveSettings();
   }
+  else if (selectedIndex == 1)
+    setActiveScreen(SET_CLOCK);
   else if (selectedIndex == 2)
+    setActiveScreen(REGION);
+  else if (selectedIndex == 4)
     is24Hour = !is24Hour;
-  else if (selectedIndex == 3)
+  else if (selectedIndex == 5)
     displaysSeconds = !displaysSeconds;
   render();
 }
