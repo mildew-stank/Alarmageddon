@@ -137,8 +137,12 @@ void PasswordScreen::select()
         strcpy(password, passwordPreview);
         connectToWifi(ssid, password);
         setActiveScreen(WIFI);
+        return;
     }
     else if (selectedIndex == BACK)
+    {
         setActiveScreen(AP_LIST);
+        return;
+    }
     render();
 }
