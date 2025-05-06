@@ -1,4 +1,5 @@
-// TODO: going to this page crashed. maybe defiine the string lengths more specifically
+// TODO: rename region to time zone
+// TODO: bottom row of pixels on selected gets overriten as black by the next lines offset, fit it or remove the offset
 
 #include <alarmageddon.h>
 
@@ -64,5 +65,8 @@ void RegionScreen::select()
         Serial.println(tzRegions[selectedIndex]);
         Serial.println(tzStrings[selectedIndex - 1]);
         tzString = tzStrings[selectedIndex - 1];
+        setenv("TZ", tzString, 1);
+        tzset();
+        setActiveScreen(SETTINGS);
     }
 }

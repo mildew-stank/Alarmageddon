@@ -38,9 +38,9 @@ void SettingsScreen::render()
         isWhite = false;
       }
       display.setCursor(10, (i + titleSize) * 8);
-      if (currentIndex > 3)
+      if (currentIndex > SET_TIME_ZONE)
         display.drawRect(display.getCursorX() - 9, display.getCursorY(), 7, 7, WHITE);
-      if ((currentIndex == 4 && is24Hour) || (currentIndex == 5 && displaysSeconds))
+      if ((currentIndex == HOUR_FORMAT && is24Hour) || (currentIndex == SECONDS_FORMAT && displaysSeconds))
         display.fillRect(display.getCursorX() - 7, display.getCursorY() + 2, 3, 3, WHITE);
       display.setTextColor(isWhite);
       display.print(optionsList[currentIndex]);
@@ -85,24 +85,24 @@ void SettingsScreen::select()
 {
   if (!buttonPressed)
     buttonPressed = true;
-  else if (selectedIndex == 0)
+  else if (selectedIndex == BACK)
   {
     buttonPressed = false;
     saveSettings();
   }
-  else if (selectedIndex == 1)
+  else if (selectedIndex == SET_TIME)
   {
     setActiveScreen(SET_CLOCK);
     return;
   }
-  else if (selectedIndex == 2)
+  else if (selectedIndex == SET_TIME_ZONE)
   {
-    setActiveScreen(REGION);
+    setActiveScreen(TIME_ZONE);
     return;
   }
-  else if (selectedIndex == 4)
+  else if (selectedIndex == HOUR_FORMAT)
     is24Hour = !is24Hour;
-  else if (selectedIndex == 5)
+  else if (selectedIndex == SECONDS_FORMAT)
     displaysSeconds = !displaysSeconds;
   render();
 }

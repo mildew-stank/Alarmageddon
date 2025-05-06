@@ -62,7 +62,7 @@ void saveCredentials();
 void loadCredentials();
 void saveSettings();
 
-enum ScreenIndex
+enum ScreenIndex // TODO: put append _SCREEN to all of these
 {
     CLOCK = 0,
     ALARM = 1,
@@ -72,7 +72,7 @@ enum ScreenIndex
     PASSWORD = 5,
     INIT = 6,
     SET_CLOCK = 7,
-    REGION = 8
+    TIME_ZONE = 8
 };
 
 // base class
@@ -207,9 +207,17 @@ private:
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x48, 0x20, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x4a, 0x08, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x22, 0x44, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};*/
-    const char optionsList[6][16] = {"Back", "Set time", "Set region", "Sync time", "24 hour", "Display seconds"};
+    const char optionsList[5][16] = {"Back", "Set time", "Set time zone", "24 hour", "Display seconds"};
     unsigned short topIndex = 0;
     unsigned short selectedIndex = 0;
+    enum SettingsButtons // TODO: implement in settings_screen.cpp
+    {
+        BACK = 0,
+        SET_TIME = 1,
+        SET_TIME_ZONE = 2,
+        HOUR_FORMAT = 3,
+        SECONDS_FORMAT = 4
+    };
 
 public:
     void setup() override;
@@ -311,10 +319,16 @@ private:
     short selectionIndex = 0;
     short displayHour = 0;
     short displayMinute = 0;
-    // char status[2][4] = {"Off", "On"}; // re-use for wifi sync?
     char meridian[2][3] = {"AM", "PM"};
     bool isPM = false;
     short cycleLength = 24;
+    struct tm t = {};
+    short clockDay = 0;
+    const char *displayDay;
+    short dayIndex = -1;
+    short meridianIndex = -1;
+    short clockSecondIndex = -1;
+    const char *getDayOfWeekName(int day);
 
 public:
     void setup() override;

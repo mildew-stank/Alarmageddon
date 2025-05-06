@@ -345,7 +345,6 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
   wl_status_t wifiStatus;
 
   WiFi.disconnect();
-
   if (trySaved)
   {
     loadCredentials();
@@ -353,7 +352,6 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
   }
   else
     wifiStatus = WiFi.begin(enterSsid, enterPassword);
-
   display.clearDisplay();
   display.setCursor(0, 0);
   display.println("Connecting to wifi...");
@@ -377,7 +375,6 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
     strncpy(password, enterPassword, sizeof(password) - 1);
     saveCredentials();
   }
-
   if (tryNtp)
     connectToNtp();
   return true;

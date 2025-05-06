@@ -55,7 +55,7 @@ void ClockScreen::render()
 const char *ClockScreen::getDayOfWeekName(int day)
 {
   {
-    switch (timeData.tm_wday)
+    switch (day)
     {
     case 0:
       return "Sunday";
