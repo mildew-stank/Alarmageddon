@@ -20,6 +20,7 @@ class PasswordScreen;
 class InitializationScreen;
 class SetClockScreen;
 class RegionScreen;
+class CustomTzScreen;
 
 // extern globals from main
 extern const unsigned short titleSize;
@@ -29,7 +30,7 @@ extern Adafruit_SSD1306 display;
 extern tm timeData;
 extern unsigned short screenIndex;
 extern unsigned short visibleCount;
-extern MenuScreen *container[9];
+extern MenuScreen *container[10];
 extern char ssid[33];
 extern char password[64];
 extern bool alarmOn;
@@ -72,7 +73,8 @@ enum ScreenIndex // TODO: put append _SCREEN to all of these
     PASSWORD = 5,
     INIT = 6,
     SET_CLOCK = 7,
-    TIME_ZONE = 8
+    TIME_ZONE = 8,
+    CUSTOM_TZ_SCREEN = 9
 };
 
 // base class
@@ -379,6 +381,20 @@ private:
     unsigned short selectedIndex = 0;
     unsigned short topIndex = 0;
     // short length = 0;
+
+public:
+    void setup() override;
+    void loop() override;
+    void render() override;
+    void left() override;
+    void right() override;
+    void select() override;
+};
+
+class CustomTzScreen : public MenuScreen
+{
+private:
+    unsigned short selectedIndex = 0;
 
 public:
     void setup() override;

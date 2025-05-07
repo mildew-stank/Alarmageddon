@@ -66,7 +66,8 @@ PasswordScreen ps;
 InitializationScreen is;
 SetClockScreen sc;
 RegionScreen rs;
-MenuScreen *container[9] = {&cs, &as, &ws, &ss, &ls, &ps, &is, &sc, &rs};
+CustomTzScreen ct;
+MenuScreen *container[10] = {&cs, &as, &ws, &ss, &ls, &ps, &is, &sc, &rs, &ct};
 
 void handleAlarm()
 {

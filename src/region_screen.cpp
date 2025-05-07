@@ -59,7 +59,7 @@ void RegionScreen::select()
         return;
     }
     else if (selectedIndex == 15)
-        Serial.println("Custom screen"); // TODO: make real custom screen
+        setActiveScreen(CUSTOM_TZ_SCREEN);
     else
     {
         Serial.println(tzRegions[selectedIndex]);
