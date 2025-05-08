@@ -1,3 +1,5 @@
+// TODO: make a header for each class and include them here. use curlies for all my inline ifs too
+
 #ifndef ALARMAGEDDON_H
 #define ALARMAGEDDON_H
 
@@ -19,7 +21,7 @@ class ApListScreen;
 class PasswordScreen;
 class InitializationScreen;
 class SetClockScreen;
-class RegionScreen;
+class TimeZoneScreen;
 class CustomTzScreen;
 
 // extern globals from main
@@ -50,8 +52,9 @@ int getCenteredCursorFormattedX(unsigned short bufferSize, const char *text, ...
 void printfCenteredTextX(unsigned short bufferSize, const char *text, ...);
 void printCenteredTextX(const char *text, bool newLine = false);
 void printSelectable(bool isSelected, const char *text);
-void printfSelectable(unsigned short bufferSize, short padding, bool isSelected, const char *text, ...);
+void printfSelectable(unsigned short bufferSize, bool isSelected, const char *text, ...);
 void printButton(short padding, short radius, const char *text);
+bool connectToNtp();
 bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved = false, bool tryNtp = true);
 void setAlarmStatus(bool status);
 void setDisplayToDefault();
@@ -87,6 +90,8 @@ public:
     virtual void left() = 0;
     virtual void right() = 0;
     virtual void select() = 0;
+    short selectedIndex = 0;
+    short topIndex = 0;
     bool buttonPressed = false;
 };
 
@@ -129,6 +134,8 @@ public:
 class WifiScreen : public MenuScreen
 {
 private:
+    const char *connectedList[4] = {"Back", "Disconnect", "Set time zone", "Sync time"};
+    const char *disconnectedList[5] = {"Back", "Reconnect", "Scan", "Set time zone", "Sync time"};
     wl_status_t wifiStatus;
     wl_status_t wifiStatusPrevious;
 
@@ -210,8 +217,6 @@ private:
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x4a, 0x08, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x22, 0x44, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};*/
     const char optionsList[5][16] = {"Back", "Set time", "Set time zone", "24 hour", "Display seconds"};
-    unsigned short topIndex = 0;
-    unsigned short selectedIndex = 0;
     enum SettingsButtons // TODO: implement in settings_screen.cpp
     {
         BACK = 0,
@@ -233,8 +238,6 @@ public:
 class ApListScreen : public MenuScreen
 {
 private:
-    unsigned short selectedIndex = 0;
-    unsigned short topIndex = 0;
     char ssidBuffer[64][21];
     short length = 0;
     const unsigned char wifi_sig1[8] = {
@@ -277,7 +280,6 @@ private:
     bool isCapsLocked = false;
     char passwordPreview[64];
     short charListScroll = 0;
-    short selectedIndex = 0;
     short passwordIndex = 0;
     enum PasswordButtons
     {
@@ -300,12 +302,6 @@ public:
 
 class InitializationScreen : public MenuScreen
 {
-private:
-    // unsigned int timeStamp = 0;
-    unsigned short selectedIndex = 0;
-    unsigned short topIndex = 0;
-    // short length = 0;
-
 public:
     void setup() override;
     void loop() override;
@@ -341,7 +337,7 @@ public:
     void select() override;
 };
 
-class RegionScreen : public MenuScreen
+class TimeZoneScreen : public MenuScreen
 {
 private:
     const char *tzRegions[16] = {
@@ -378,9 +374,6 @@ private:
         "LHST-10:30LHDT-11,M10.1.0/2,M4.1.0/2", // Lord Howe
         "NZST-12NZDT,M9.5.0/2,M4.1.0/3",        // Auckland
     };
-    unsigned short selectedIndex = 0;
-    unsigned short topIndex = 0;
-    // short length = 0;
 
 public:
     void setup() override;
@@ -394,7 +387,17 @@ public:
 class CustomTzScreen : public MenuScreen
 {
 private:
-    unsigned short selectedIndex = 0;
+    char customTz[33];
+    struct dstEntry
+    {
+        short month = 1;
+        short week = 1;
+        short day;
+        short hour;
+    };
+    dstEntry start, end;
+    short hour, minute;
+    char sign = '+';
 
 public:
     void setup() override;

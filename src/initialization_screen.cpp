@@ -64,20 +64,16 @@ void InitializationScreen::loop()
 
 void InitializationScreen::render()
 {
-
 }
 
 void InitializationScreen::left()
 {
-
 }
 
 void InitializationScreen::right()
 {
-
 }
 
 void InitializationScreen::select()
 {
-
 }

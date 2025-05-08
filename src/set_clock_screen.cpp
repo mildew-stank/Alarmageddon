@@ -48,11 +48,11 @@ void SetClockScreen::render()
             dayIndex = 3;
             centeredX = getCenteredCursorX("00:00:00");
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, false, selectionIndex == 0, "%02i", displayHour);
+            printfSelectable(3, selectionIndex == 0, "%02i", displayHour);
             display.print(":");
-            printfSelectable(3, false, selectionIndex == 1, "%02i", clockMinute);
+            printfSelectable(3, selectionIndex == 1, "%02i", clockMinute);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", clockSecond);
+            printfSelectable(3, selectionIndex == 2, "%02i", clockSecond);
             display.setTextSize(1);
             display.println("\n");
             centeredX = getCenteredCursorX(displayDay);
@@ -65,9 +65,9 @@ void SetClockScreen::render()
             dayIndex = 2;
             centeredX = getCenteredCursorX("00:00");
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 0, "%02i", displayHour);
+            printfSelectable(3, selectionIndex == 0, "%02i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 1, "%02i", clockMinute);
+            printfSelectable(3, selectionIndex == 1, "%02i", clockMinute);
             display.setTextSize(1);
             printSelectable(selectionIndex == 2, displayDay);
         }
@@ -82,11 +82,11 @@ void SetClockScreen::render()
             dayIndex = 4;
             centeredX = getCenteredCursorFormattedX(9, "%i:00:00", displayHour);
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 0, "%i", displayHour);
+            printfSelectable(3, selectionIndex == 0, "%i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 1, "%02i", clockMinute);
+            printfSelectable(3, selectionIndex == 1, "%02i", clockMinute);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", clockSecond);
+            printfSelectable(3, selectionIndex == 2, "%02i", clockSecond);
             display.setTextSize(1);
             centeredX = getCenteredCursorFormattedX(7, "%s %s", meridian[0], displayDay);
             // centeredX = getCenteredCursorX(meridian[0]);
@@ -103,9 +103,9 @@ void SetClockScreen::render()
             dayIndex = 3;
             centeredX = getCenteredCursorFormattedX(7, "%i:00", displayHour);
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 0, "%i", displayHour);
+            printfSelectable(3, selectionIndex == 0, "%i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 1, "%02i", clockMinute);
+            printfSelectable(3, selectionIndex == 1, "%02i", clockMinute);
             display.setTextSize(1);
             short snapshotX = display.getCursorX();
             printSelectable(selectionIndex == 2, meridian[isPM]);

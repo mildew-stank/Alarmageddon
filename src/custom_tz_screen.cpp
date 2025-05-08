@@ -1,19 +1,8 @@
 #include <alarmageddon.h>
 
-struct dstEntry
-{
-    short month;
-    short week;
-    short day;
-    short hour;
-};
-
-dstEntry start, end;
-short hour, minute;
-char sign;
-
 void CustomTzScreen::setup()
 {
+    selectedIndex = 0;
     render();
 }
 
@@ -25,30 +14,31 @@ void CustomTzScreen::render()
 {
     setDisplayToDefault();
     display.setTextSize(titleSize);
-    display.print("Custom TZ");
+    printCenteredTextX("Custom TZ\n");
     display.setTextSize(1);
     display.print("UTC");
-    // printfSelectable(4, 1, selectedIndex == 0, "%c%02i", sign, hour); // TODO: make the sign automatic from hour
-    printfSelectable(4, 1, selectedIndex == 0, "%c", sign);
-    printfSelectable(4, 1, selectedIndex == 1, "%02i", hour);
+    // printfSelectable(4, selectedIndex == 0, "%c%02i", sign, hour); // TODO: make the sign automatic from hour
+    printfSelectable(4, selectedIndex == 0, "%c", sign);
+    printfSelectable(4, selectedIndex == 1, "%02i", hour);
     display.print(":");
-    printfSelectable(3, 1, selectedIndex == 2, "%02i", minute);
+    printfSelectable(3, selectedIndex == 2, "%02i", minute);
     display.print(",\nM");
-    printfSelectable(3, 1, selectedIndex == 3, "%i", start.month);
+    printfSelectable(3, selectedIndex == 3, "%i", start.month);
     display.print(".");
-    printfSelectable(3, 1, selectedIndex == 4, "%i", start.week);
+    printfSelectable(3, selectedIndex == 4, "%i", start.week);
     display.print(".");
-    printfSelectable(3, 1, selectedIndex == 5, "%i", start.day);
+    printfSelectable(3, selectedIndex == 5, "%i", start.day);
     display.print("/");
-    printfSelectable(3, 1, selectedIndex == 6, "%i", start.hour);
+    printfSelectable(3, selectedIndex == 6, "%i", start.hour);
     display.print(",\nM");
-    printfSelectable(3, 1, selectedIndex == 7, "%i", end.month);
+    printfSelectable(3, selectedIndex == 7, "%i", end.month);
     display.print(".");
-    printfSelectable(3, 1, selectedIndex == 8, "%i", end.week);
+    printfSelectable(3, selectedIndex == 8, "%i", end.week);
     display.print(".");
-    printfSelectable(3, 1, selectedIndex == 9, "%i", end.day);
+    printfSelectable(3, selectedIndex == 9, "%i", end.day);
     display.print("/");
-    printfSelectable(3, 1, selectedIndex == 10, "%i", end.hour);
+    printfSelectable(3, selectedIndex == 10, "%i", end.hour);
+    display.display();
 }
 
 void CustomTzScreen::left()
@@ -74,7 +64,7 @@ void CustomTzScreen::left()
         start.day = wrapNumber(--start.day, 0, 6);
         break;
     case 6: // start.hour
-        start.hour = wrapNumber(--start.hour, 0, 23);
+        start.hour = wrapNumber(--start.hour, 0, 24);
         break;
     case 7: // end.month
         end.month = wrapNumber(--end.month, 1, 12);
@@ -86,7 +76,7 @@ void CustomTzScreen::left()
         end.day = wrapNumber(--end.day, 0, 6);
         break;
     case 10: // end.hour
-        end.hour = wrapNumber(--end.hour, 0, 23);
+        end.hour = wrapNumber(--end.hour, 0, 24);
         break;
     }
     render();
@@ -115,7 +105,7 @@ void CustomTzScreen::right()
         start.day = wrapNumber(++start.day, 0, 6);
         break;
     case 6: // start.hour
-        start.hour = wrapNumber(++start.hour, 0, 23);
+        start.hour = wrapNumber(++start.hour, 0, 24);
         break;
     case 7: // end.month
         end.month = wrapNumber(++end.month, 1, 12);
@@ -127,7 +117,7 @@ void CustomTzScreen::right()
         end.day = wrapNumber(++end.day, 0, 6);
         break;
     case 10: // end.hour
-        end.hour = wrapNumber(++end.hour, 0, 23);
+        end.hour = wrapNumber(++end.hour, 0, 24);
         break;
     }
     render();
@@ -138,14 +128,11 @@ void CustomTzScreen::select()
     selectedIndex++;
     if (selectedIndex > 10)
     {
-        // UTC-23:59M12.5.32/23,M12.5.32/23
-        char customTz[33];
         snprintf(customTz, 33, "UTC%c%02i:%02i,M%i.%i.%i/%i,M%i.%i.%i/%i", sign, hour, minute, start.month, start.week, start.day, start.hour, end.month, end.week, end.day, end.hour);
-        // TODO: apply to tzString
-        // setenv("TZ", customTz, 1);
-        // tzset();
-        selectedIndex = 0;
-        setActiveScreen(SETTINGS);
+        tzString = customTz;
+        setenv("TZ", customTz, 1);
+        tzset();
+        setActiveScreen(WIFI);
         return;
     }
     render();

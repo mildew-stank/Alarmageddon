@@ -38,9 +38,9 @@ void AlarmScreen::render()
             // 24HMS
             centeredX = getCenteredCursorX("00:00:00");
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, false, selectionIndex == 1, "%02i", displayHour);
+            printfSelectable(3, selectionIndex == 1, "%02i", displayHour);
             display.print(":");
-            printfSelectable(3, false, selectionIndex == 2, "%02i", alarmMinute);
+            printfSelectable(3, selectionIndex == 2, "%02i", alarmMinute);
             display.println(":00");
             display.setTextSize(1);
             centeredX = getCenteredCursorX(status[alarmSet]);
@@ -52,9 +52,9 @@ void AlarmScreen::render()
             // 24HM
             centeredX = getCenteredCursorX("00:00");
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 1, "%02i", displayHour);
+            printfSelectable(3, selectionIndex == 1, "%02i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", alarmMinute);
+            printfSelectable(3, selectionIndex == 2, "%02i", alarmMinute);
             display.setTextSize(1);
             printSelectable(selectionIndex == 3, status[alarmSet]);
         }
@@ -66,9 +66,9 @@ void AlarmScreen::render()
             // 12HMS
             centeredX = getCenteredCursorFormattedX(9, "%i:00:00", displayHour);
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 1, "%i", displayHour);
+            printfSelectable(3, selectionIndex == 1, "%i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", alarmMinute);
+            printfSelectable(3, selectionIndex == 2, "%02i", alarmMinute);
             display.println(":00");
             display.setTextSize(1);
             centeredX = getCenteredCursorFormattedX(7, "%s %s", meridian[0], status[alarmSet]);
@@ -82,9 +82,9 @@ void AlarmScreen::render()
             // 12HM
             centeredX = getCenteredCursorFormattedX(7, "%i:00", displayHour);
             display.setCursor(centeredX, display.getCursorY());
-            printfSelectable(3, 0, selectionIndex == 1, "%i", displayHour);
+            printfSelectable(3, selectionIndex == 1, "%i", displayHour);
             display.print(":");
-            printfSelectable(3, 0, selectionIndex == 2, "%02i", alarmMinute);
+            printfSelectable(3, selectionIndex == 2, "%02i", alarmMinute);
             display.setTextSize(1);
             short snapshotX = display.getCursorX();
             printSelectable(selectionIndex == 3, meridian[isPM]);

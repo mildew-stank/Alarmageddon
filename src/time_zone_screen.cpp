@@ -1,18 +1,17 @@
-// TODO: rename region to time zone
 // TODO: bottom row of pixels on selected gets overriten as black by the next lines offset, fit it or remove the offset
 
 #include <alarmageddon.h>
 
-void RegionScreen::setup()
+void TimeZoneScreen::setup()
 {
     render();
 }
 
-void RegionScreen::loop()
+void TimeZoneScreen::loop()
 {
 }
 
-void RegionScreen::render()
+void TimeZoneScreen::render()
 {
     setDisplayToDefault();
     display.setTextSize(titleSize);
@@ -29,7 +28,7 @@ void RegionScreen::render()
     display.display();
 }
 
-void RegionScreen::left()
+void TimeZoneScreen::left()
 {
     if (selectedIndex > 0)
     {
@@ -40,7 +39,7 @@ void RegionScreen::left()
     }
 }
 
-void RegionScreen::right()
+void TimeZoneScreen::right()
 {
     if (selectedIndex < 15) // list size
     {
@@ -51,11 +50,11 @@ void RegionScreen::right()
     }
 }
 
-void RegionScreen::select()
+void TimeZoneScreen::select()
 {
     if (selectedIndex == 0)
     {
-        setActiveScreen(SETTINGS);
+        setActiveScreen(WIFI);
         return;
     }
     else if (selectedIndex == 15)
@@ -67,6 +66,6 @@ void RegionScreen::select()
         tzString = tzStrings[selectedIndex - 1];
         setenv("TZ", tzString, 1);
         tzset();
-        setActiveScreen(SETTINGS);
+        setActiveScreen(WIFI);
     }
 }

@@ -2,128 +2,128 @@
 
 void ApListScreen::setup()
 {
-  selectedIndex = 0;
-  topIndex = 0;
-  WiFi.disconnect(); // scanNetworks won't work if we tried to connect to something with bad credentials, so make sure we're disconnected
-  WiFi.scanNetworks(true);
-  populateList();
-  render();
+    selectedIndex = 0;
+    topIndex = 0;
+    WiFi.disconnect(); // scanNetworks won't work if we tried to connect to something with bad credentials, so make sure we're disconnected
+    WiFi.scanNetworks(true);
+    populateList();
+    render();
 }
 
 void ApListScreen::loop()
 {
-  scanStatus = WiFi.scanComplete();
-  if (scanStatus != scanStatusPrevious)
-  {
-    Serial.printf("LOOP - Scan status: %i\n", scanStatus);
-    scanStatusPrevious = scanStatus;
-    populateList();
-    render();
-  }
+    scanStatus = WiFi.scanComplete();
+    if (scanStatus != scanStatusPrevious)
+    {
+        Serial.printf("LOOP - Scan status: %i\n", scanStatus);
+        scanStatusPrevious = scanStatus;
+        populateList();
+        render();
+    }
 }
 
 void ApListScreen::render()
 {
-  setDisplayToDefault();
-  display.setTextSize(titleSize);
-  if (length > 1)
-    printCenteredTextX("AP List");
-  else
-    printCenteredTextX("Scanning");
-  display.setTextSize(1);
-  for (unsigned short i = 0; i < visibleCount; i++)
-  {
-    unsigned short currentIndex = topIndex + i;
-    bool isWhite = true;
+    setDisplayToDefault();
+    display.setTextSize(titleSize);
+    if (length > 1)
+        printCenteredTextX("Networks");
+    else
+        printCenteredTextX("Scanning");
+    display.setTextSize(1);
+    for (unsigned short i = 0; i < visibleCount; i++)
+    {
+        unsigned short currentIndex = topIndex + i;
+        bool isWhite = true;
 
-    if (currentIndex >= length)
-      break;
-    if (currentIndex == selectedIndex)
-    {
-      display.fillRect(0, (i + titleSize) * 8 - 1, screenWidth, 9, WHITE); // - 1 for y and + 1 for h to cover the top
-      isWhite = false;
+        if (currentIndex >= length)
+            break;
+        if (currentIndex == selectedIndex)
+        {
+            display.fillRect(0, (i + titleSize) * 8 - 1, screenWidth, 9, WHITE); // - 1 for y and + 1 for h to cover the top
+            isWhite = false;
+        }
+        display.setCursor(10, (i + titleSize) * 8); // x is 10 for 2 padding + 8x8 icon
+        if (currentIndex > 0)
+        {
+            short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
+            display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, isWhite);
+        }
+        display.setTextColor(isWhite);
+        display.print(ssidBuffer[currentIndex]);
     }
-    display.setCursor(10, (i + titleSize) * 8); // x is 10 for 2 padding + 8x8 icon
-    if (currentIndex > 0)
-    {
-      short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
-      display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, isWhite);
-    }
-    display.setTextColor(isWhite);
-    display.print(ssidBuffer[currentIndex]);
-  }
-  display.display();
+    display.display();
 }
 
 int ApListScreen::min(int a, int b)
 {
-  if (a < 0 || b < 0)
-    return 0;
-  return (a < b) ? a : b;
+    if (a < 0 || b < 0)
+        return 0;
+    return (a < b) ? a : b;
 }
 
 short ApListScreen::rssiToBars(int rssi)
 {
-  if (rssi >= -50)
-    return 4;
-  if (rssi >= -60)
-    return 3;
-  if (rssi >= -70)
-    return 2;
-  else
-    return 1;
+    if (rssi >= -50)
+        return 4;
+    if (rssi >= -60)
+        return 3;
+    if (rssi >= -70)
+        return 2;
+    else
+        return 1;
 }
 
 void ApListScreen::populateList()
 {
-  unsigned int amountOfEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]); // sizeof ssidBuffer x * y so divide
-  unsigned short maxEntries = amountOfEntries - 1;                           // and reserve 1 for "Back"
-  short scanCount = WiFi.scanComplete();
+    unsigned int amountOfEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]); // sizeof ssidBuffer x * y so divide
+    unsigned short maxEntries = amountOfEntries - 1;                           // and reserve 1 for "Back"
+    short scanCount = WiFi.scanComplete();
 
-  length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
-  strncpy(ssidBuffer[0], "Back", sizeof(ssidBuffer[0]) - 1);
-  for (unsigned short i = 1; i < length; i++)
-  {
-    strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), sizeof(ssidBuffer[0]) - 1);
-    ssidBuffer[i][amountOfEntries - 1] = '\0'; // return null terminator to the end of truncated strings
-  }
+    length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
+    strncpy(ssidBuffer[0], "Back", sizeof(ssidBuffer[0]) - 1);
+    for (unsigned short i = 1; i < length; i++)
+    {
+        strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), sizeof(ssidBuffer[0]) - 1);
+        ssidBuffer[i][amountOfEntries - 1] = '\0'; // return null terminator to the end of truncated strings
+    }
 }
 
 void ApListScreen::left()
 {
-  if (selectedIndex > 0)
-  {
-    selectedIndex--;
-    if (selectedIndex < topIndex)
+    if (selectedIndex > 0)
     {
-      topIndex--;
+        selectedIndex--;
+        if (selectedIndex < topIndex)
+        {
+            topIndex--;
+        }
+        render();
     }
-    render();
-  }
 }
 
 void ApListScreen::right()
 {
-  if (selectedIndex < length - 1)
-  {
-    selectedIndex++;
-    if (selectedIndex >= topIndex + visibleCount)
+    if (selectedIndex < length - 1)
     {
-      topIndex++;
+        selectedIndex++;
+        if (selectedIndex >= topIndex + visibleCount)
+        {
+            topIndex++;
+        }
+        render();
     }
-    render();
-  }
 }
 
 void ApListScreen::select()
 {
-  if (selectedIndex == 0)
-  {
+    if (selectedIndex == 0)
+    {
+        WiFi.scanDelete();
+        setActiveScreen(WIFI);
+        return;
+    }
+    strncpy(ssid, WiFi.SSID(selectedIndex - 1).c_str(), 32);
     WiFi.scanDelete();
-    setActiveScreen(WIFI);
-    return;
-  }
-  strncpy(ssid, WiFi.SSID(selectedIndex - 1).c_str(), 32);
-  WiFi.scanDelete();
-  setActiveScreen(PASSWORD);
+    setActiveScreen(PASSWORD);
 }
