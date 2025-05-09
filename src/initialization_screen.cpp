@@ -25,28 +25,6 @@ const unsigned char *bird[7] = {
     bird6,
     bird7};
 
-void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
-{
-    static unsigned short frame = 0; // NOTE: this needs to be a class if i want multiple independant animations starting at frame 0 or a given offset each time
-
-    frame = ++frame % frameCount;
-    display.drawBitmap(x, y, frames[frame], w, h, WHITE);
-}
-
-bool requestAnimationFrame(unsigned short frameRate)
-{
-    static unsigned long lastFrame = 0;
-    unsigned long now = millis();
-    unsigned long interval = 1000 / frameRate;
-
-    if (now - lastFrame >= interval)
-    {
-        lastFrame += interval; // NOTE: this should probably be done in clock and alarm handler for a bit of delta time
-        return true;
-    }
-    return false;
-}
-
 void InitializationScreen::setup()
 {
     render();

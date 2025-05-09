@@ -1,5 +1,6 @@
 // TODO: uniform progress animations on wifi, ntp, & ap scan screens
 // need a way to set up the remote and see if its available when/before alarm goes off
+// make alarm beep on and off
 // my bedounce time is massive, bad button? seems so
 
 #include "alarmageddon.h"
@@ -66,7 +67,7 @@ TimeZoneScreen rs;
 CustomTzScreen ct;
 MenuScreen *container[10] = {&cs, &as, &ws, &ss, &ls, &ps, &is, &sc, &rs, &ct};
 
-void handleAlarm()
+void handleAlarmEvent()
 {
     // TODO: check if there is a remote available, if so make it so only that can turn this off. prob need new function to handle remote
     static unsigned long lastCheckTime;
@@ -88,10 +89,31 @@ void handleAlarm()
 
 void setAlarmStatus(bool status)
 {
-    // NOTE: currently only the clock screen select method can turn this off
-    Serial.printf("Alarm %s\n", status ? "true" : "false");
-    digitalWrite(buzzerPin, status);
     alarmOn = status;
+}
+
+void handleAlarmPattern()
+{
+    static bool isBeeping = true;
+    static unsigned long lastToggle = 0;
+    if (!alarmOn)
+    {
+        digitalWrite(buzzerPin, LOW);
+        return;
+    }
+    float phaseTime = 5000.0f;
+    float phase = (millis() % 5000) / phaseTime * 2.0f * PI;
+    float cosValue = cos(phase);
+    float minInterval = 100.0f;
+    float maxInterval = 1000.0f;
+    float interval = minInterval + (maxInterval - minInterval) * ((cosValue + 1.0f) / 2.0f);
+
+    if (millis() - lastToggle >= interval)
+    {
+        isBeeping = !isBeeping;
+        digitalWrite(buzzerPin, isBeeping);
+        lastToggle += interval;
+    }
 }
 
 void sendData()
@@ -119,6 +141,28 @@ void onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
     memcpy(&message, incomingData, sizeof(message));
     Serial.print("ESP-Now data received: ");
     Serial.println(message.isPressed);
+}
+
+void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
+{
+    static unsigned short frame = 0; // NOTE: this needs to be a class if i want multiple independant animations starting at frame 0 or a given offset each time
+
+    frame = ++frame % frameCount;
+    display.drawBitmap(x, y, frames[frame], w, h, WHITE);
+}
+
+bool requestAnimationFrame(unsigned short frameRate)
+{
+    static unsigned long lastFrame = 0;
+    unsigned long now = millis();
+    unsigned long interval = 1000 / frameRate;
+
+    if (now - lastFrame >= interval)
+    {
+        lastFrame += interval; // NOTE: this should probably be done in clock and alarm handler for a bit of delta time
+        return true;
+    }
+    return false;
 }
 
 int getCenteredCursorX(const char *text)
@@ -390,7 +434,7 @@ bool startEspNow()
     peerInfo.encrypt = false;
     if (esp_now_add_peer(&peerInfo) != ESP_OK)
     {
-        Serial.println(" ESP-Now adding failed");
+        Serial.println("ESP-Now adding failed");
         return false;
     }
     if (esp_now_register_recv_cb(onDataReceived) != ESP_OK)
@@ -438,15 +482,14 @@ void setup()
         return; // this is catastrophic
     loadSettings();
     connectToWifi("", "", true);
-    // if (WiFi.disconnect()) Serial.println("WiFi disconnected"); // done syncing so why stay connected?
-    // startEspNow();
-    // container[CLOCK]->setup();
+    startEspNow();
     setActiveScreen(CLOCK); // NOTE: 6 for animation test screen
 }
 
 void loop()
 {
     handleInput();
-    handleAlarm();
+    handleAlarmEvent();
+    handleAlarmPattern();
     container[screenIndex]->loop();
 }

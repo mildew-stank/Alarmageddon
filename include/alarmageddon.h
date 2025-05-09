@@ -54,6 +54,8 @@ void printCenteredTextX(const char *text, bool newLine = false);
 void printSelectable(bool isSelected, const char *text);
 void printfSelectable(unsigned short bufferSize, bool isSelected, const char *text, ...);
 void printButton(short padding, short radius, const char *text);
+void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h);
+bool requestAnimationFrame(unsigned short frameRate);
 bool connectToNtp();
 bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved = false, bool tryNtp = true);
 void setAlarmStatus(bool status);
