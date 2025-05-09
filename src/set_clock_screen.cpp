@@ -1,5 +1,3 @@
-// TODO: use setenv("TZ", tzString, 1); and tzset(); to apply timezone maybe but it will apply offset to current time
-
 #include "alarmageddon.h"
 
 void SetClockScreen::setup()

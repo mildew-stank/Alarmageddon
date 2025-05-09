@@ -27,30 +27,23 @@ void ApListScreen::render()
     setDisplayToDefault();
     display.setTextSize(titleSize);
     if (length > 1)
-        printCenteredTextX("Networks");
+        printCenteredTextX("Networks\n");
     else
-        printCenteredTextX("Scanning");
+        printCenteredTextX("Scanning\n");
     display.setTextSize(1);
-    for (unsigned short i = 0; i < visibleCount; i++)
+    for (short i = 0; i < visibleCount; i++)
     {
-        unsigned short currentIndex = topIndex + i;
-        bool isWhite = true;
+        short currentIndex = topIndex + i;
+        short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
 
         if (currentIndex >= length)
             break;
-        if (currentIndex == selectedIndex)
-        {
-            display.fillRect(0, (i + titleSize) * 8 - 1, screenWidth, 9, WHITE); // - 1 for y and + 1 for h to cover the top
-            isWhite = false;
-        }
-        display.setCursor(10, (i + titleSize) * 8); // x is 10 for 2 padding + 8x8 icon
-        if (currentIndex > 0)
-        {
-            short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
-            display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, isWhite);
-        }
-        display.setTextColor(isWhite);
-        display.print(ssidBuffer[currentIndex]);
+        display.setCursor(10, display.getCursorY());
+        printSelectable(currentIndex == selectedIndex, ssidBuffer[currentIndex]);
+        display.println();
+        if (currentIndex == 0)
+            break;
+        display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, currentIndex != selectedIndex);
     }
     display.display();
 }
@@ -77,12 +70,12 @@ short ApListScreen::rssiToBars(int rssi)
 void ApListScreen::populateList()
 {
     unsigned int amountOfEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]); // sizeof ssidBuffer x * y so divide
-    unsigned short maxEntries = amountOfEntries - 1;                           // and reserve 1 for "Back"
+    short maxEntries = amountOfEntries - 1;                           // and reserve 1 for "Back"
     short scanCount = WiFi.scanComplete();
 
     length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
     strncpy(ssidBuffer[0], "Back", sizeof(ssidBuffer[0]) - 1);
-    for (unsigned short i = 1; i < length; i++)
+    for (short i = 1; i < length; i++)
     {
         strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), sizeof(ssidBuffer[0]) - 1);
         ssidBuffer[i][amountOfEntries - 1] = '\0'; // return null terminator to the end of truncated strings

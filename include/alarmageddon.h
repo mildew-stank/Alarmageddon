@@ -387,7 +387,6 @@ public:
 class CustomTzScreen : public MenuScreen
 {
 private:
-    char customTz[33];
     struct dstEntry
     {
         short month = 1;
@@ -397,6 +396,7 @@ private:
     };
     dstEntry start, end;
     short hour, minute;
+    char customTz[33];
     char sign = '+';
 
 public:

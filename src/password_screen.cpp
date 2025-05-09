@@ -1,4 +1,3 @@
-// TODO: prevent passwordIndex from going out of bounds
 // TODO: render just the rightmost part of the password if its too long to fit on screen. either same way as charlist scroll or maybe just offset the cursor with gettextbounds
 
 #include "alarmageddon.h"
@@ -59,7 +58,6 @@ void PasswordScreen::render()
         display.fillRect(centeredX - 1, y - 1, w, h, WHITE);
         display.setTextColor(BLACK);
         printCenteredTextX(charListButtons[selectedIndex]);
-        // printButton(4, 4, charListButtons[selectedIndex]); // NOTE: i have no pixels to spare but this might look good on a larger screen
     }
     display.setTextColor(WHITE);
     display.println(""); // for the newline
@@ -121,7 +119,7 @@ void PasswordScreen::select()
         render();
         return;
     }
-    if (selectedIndex == SPACE)
+    if (selectedIndex == SPACE && passwordIndex < sizeof(passwordPreview) - 1)
         passwordPreview[passwordIndex++] = ' ';
     else if (selectedIndex == BACKSPACE && passwordIndex >= 0)
     {

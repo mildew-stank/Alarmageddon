@@ -1,9 +1,6 @@
 // TODO: uniform progress animations on wifi, ntp, & ap scan screens
-// determin how often to auto resync if connected to wifi and make a handler for it
-// need a set time, set time zone, and sync time setting/screen
 // need a way to set up the remote and see if its available when/before alarm goes off
 // my bedounce time is massive, bad button? seems so
-// wifi passwords with non standard or non u.s. characters cant be entered
 
 #include "alarmageddon.h"
 

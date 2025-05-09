@@ -1,5 +1,3 @@
-// TODO: bottom row of pixels on selected gets overriten as black by the next lines offset, fit it or remove the offset
-
 #include <alarmageddon.h>
 
 void TimeZoneScreen::setup()
@@ -17,9 +15,9 @@ void TimeZoneScreen::render()
     display.setTextSize(titleSize);
     printCenteredTextX("Time Zone\n");
     display.setTextSize(1);
-    for (unsigned short i = 0; i < visibleCount; i++)
+    for (short i = 0; i < visibleCount; i++)
     {
-        unsigned short currentIndex = topIndex + i;
+        short currentIndex = topIndex + i;
 
         display.setCursor(1, display.getCursorY());
         printSelectable(currentIndex == selectedIndex, tzRegions[currentIndex]);

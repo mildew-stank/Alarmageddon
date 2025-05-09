@@ -1,6 +1,3 @@
-// TODO: enum for selection numbers
-// maybe put sync time and region in wifi instead of here
-
 #include "alarmageddon.h"
 
 void SettingsScreen::setup()
