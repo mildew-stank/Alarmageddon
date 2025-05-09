@@ -1,6 +1,5 @@
 // TODO: uniform progress animations on wifi, ntp, & ap scan screens
 // need a way to set up the remote and see if its available when/before alarm goes off
-// make alarm beep on and off
 // my bedounce time is massive, bad button? seems so
 
 #include "alarmageddon.h"
