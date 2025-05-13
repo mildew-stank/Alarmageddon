@@ -41,85 +41,55 @@ void CustomTzScreen::render()
     display.display();
 }
 
-void CustomTzScreen::left()
+void CustomTzScreen::adjustValue(short index, short value)
 {
-    switch (selectedIndex)
+    switch (index)
     {
-    case 0: // sign
+    case 0:
         sign = (sign == '+') ? '-' : '+';
         break;
-    case 1: // hour
-        hour = wrapNumber(--hour, 0, 14);
+    case 1:
+        hour = wrapNumber(hour + value, 0, 14);
         break;
-    case 2: // minute
-        minute = wrapNumber(--minute, 0, 60);
+    case 2:
+        minute = wrapNumber(minute + value, 0, 60);
         break;
-    case 3: // start.month
-        start.month = wrapNumber(--start.month, 1, 12);
+    case 3:
+        start.month = wrapNumber(start.month + value, 1, 12);
         break;
-    case 4: // start.week
-        start.week = wrapNumber(--start.week, 1, 5);
+    case 4:
+        start.week = wrapNumber(start.week + value, 1, 5);
         break;
-    case 5: // start.day
-        start.day = wrapNumber(--start.day, 0, 6);
+    case 5:
+        start.day = wrapNumber(start.day + value, 0, 6);
         break;
-    case 6: // start.hour
-        start.hour = wrapNumber(--start.hour, 0, 24);
+    case 6:
+        start.hour = wrapNumber(start.hour + value, 0, 24);
         break;
-    case 7: // end.month
-        end.month = wrapNumber(--end.month, 1, 12);
+    case 7:
+        end.month = wrapNumber(end.month + value, 1, 12);
         break;
-    case 8: // end.week
-        end.week = wrapNumber(--end.week, 1, 5);
+    case 8:
+        end.week = wrapNumber(end.week + value, 1, 5);
         break;
-    case 9: // end.day
-        end.day = wrapNumber(--end.day, 0, 6);
+    case 9:
+        end.day = wrapNumber(end.day + value, 0, 6);
         break;
-    case 10: // end.hour
-        end.hour = wrapNumber(--end.hour, 0, 24);
+    case 10:
+        end.hour = wrapNumber(end.hour + value, 0, 24);
         break;
     }
+}
+
+void CustomTzScreen::left()
+{
+    adjustValue(selectedIndex, -1);
     render();
 }
 
 void CustomTzScreen::right()
 {
-    switch (selectedIndex)
-    {
-    case 0: // sign
-        sign = (sign == '+') ? '-' : '+';
-        break;
-    case 1: // hour
-        hour = wrapNumber(++hour, 0, 14);
-        break;
-    case 2: // minute
-        minute = wrapNumber(++minute, 0, 60);
-        break;
-    case 3: // start.month
-        start.month = wrapNumber(++start.month, 1, 12);
-        break;
-    case 4: // start.week
-        start.week = wrapNumber(++start.week, 1, 5);
-        break;
-    case 5: // start.day
-        start.day = wrapNumber(++start.day, 0, 6);
-        break;
-    case 6: // start.hour
-        start.hour = wrapNumber(++start.hour, 0, 24);
-        break;
-    case 7: // end.month
-        end.month = wrapNumber(++end.month, 1, 12);
-        break;
-    case 8: // end.week
-        end.week = wrapNumber(++end.week, 1, 5);
-        break;
-    case 9: // end.day
-        end.day = wrapNumber(++end.day, 0, 6);
-        break;
-    case 10: // end.hour
-        end.hour = wrapNumber(++end.hour, 0, 24);
-        break;
-    }
+    adjustValue(selectedIndex, 1);
     render();
 }
 
@@ -128,8 +98,8 @@ void CustomTzScreen::select()
     selectedIndex++;
     if (selectedIndex > 10)
     {
-        snprintf(customTz, 33, "UTC%c%02i:%02i,M%i.%i.%i/%i,M%i.%i.%i/%i", sign, hour, minute, start.month, start.week, start.day, start.hour, end.month, end.week, end.day, end.hour);
-        tzString = customTz;
+        snprintf(customTz, 37, "UTC%c%02i:%02i,M%i.%i.%i/%i,M%i.%i.%i/%i", sign, hour, minute, start.month, start.week, start.day, start.hour, end.month, end.week, end.day, end.hour);
+        strncpy(tzString, customTz, 37);
         setenv("TZ", customTz, 1);
         tzset();
         setActiveScreen(WIFI);

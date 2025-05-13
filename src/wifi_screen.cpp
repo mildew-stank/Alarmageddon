@@ -86,7 +86,10 @@ void WifiScreen::select()
         return;
     }
     if (selectedIndex == 0)
+    {
         buttonPressed = false;
+        saveSettings();
+    }
     else if (wifiStatus == WL_CONNECTED)
     {
         if (selectedIndex == 1)

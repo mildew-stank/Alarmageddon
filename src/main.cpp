@@ -1,5 +1,5 @@
-// TODO: uniform progress animations on wifi, ntp, & ap scan screens
-// need a way to set up the remote and see if its available when/before alarm goes off
+// TODO: need a way to set up the remote and see if its available when/before alarm goes off. dont forget to save the mac addr
+// uniform progress animations on wifi, ntp, & ap scan screens. do something with init screen or remove it.
 // my bedounce time is massive, bad button? seems so
 
 #include "alarmageddon.h"
@@ -28,16 +28,14 @@ struct_message message;
 esp_now_peer_info_t peerInfo;
 
 #if defined(HEIGHT_64)
-const char *tzString = "CST6CDT,M3.2.0,M11.1.0";
-const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
 const unsigned short titleSize = 2;
 unsigned short visibleCount = 6;
 #else
-const char *tzString = "EST5EDT,M3.2.0,M11.1.0";                         // TODO: to be set in settings and SAVED
-const uint8_t broadcastAddress[] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14}; // TODO: this too or something
 const unsigned short titleSize = 1;
 unsigned short visibleCount = 3;
 #endif
+char tzString[37];
+unsigned char broadcastAddress[6] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
 int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
@@ -140,6 +138,8 @@ void onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
     memcpy(&message, incomingData, sizeof(message));
     Serial.print("ESP-Now data received: ");
     Serial.println(message.isPressed);
+    if (message.isPressed)
+        alarmOn = false;
 }
 
 void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
@@ -327,6 +327,8 @@ void saveSettings()
     preferences.putBool("alarmSet", alarmSet);
     preferences.putBool("is24Hour", is24Hour);
     preferences.putBool("displaysSeconds", displaysSeconds);
+    preferences.putBytes("tzString", tzString, 37);
+    preferences.putBytes("broadcastAddress", broadcastAddress, 6);
     preferences.end();
 }
 
@@ -339,6 +341,8 @@ void loadSettings()
     alarmSet = preferences.getBool("alarmSet", 0);
     is24Hour = preferences.getBool("is24Hour", 0);
     displaysSeconds = preferences.getBool("displaysSeconds", 0);
+    preferences.getBytes("tzString", tzString, 37);
+    preferences.getBytes("broadcastAddress", broadcastAddress, 6);
     preferences.end();
 }
 
@@ -482,7 +486,7 @@ void setup()
     loadSettings();
     connectToWifi("", "", true);
     startEspNow();
-    setActiveScreen(CLOCK); // NOTE: 6 for animation test screen
+    setActiveScreen(CLOCK);
 }
 
 void loop()

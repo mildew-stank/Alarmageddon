@@ -44,7 +44,7 @@ extern short clockMinute;
 extern short clockHour;
 extern short alarmHour;
 extern short alarmMinute;
-extern const char *tzString;
+extern char tzString[37];
 
 // helper functions
 int getCenteredCursorX(const char *text);
@@ -398,8 +398,9 @@ private:
     };
     dstEntry start, end;
     short hour, minute;
-    char customTz[33];
+    char customTz[37];
     char sign = '+';
+    void CustomTzScreen::adjustValue(short parameter, short value);
 
 public:
     void setup() override;

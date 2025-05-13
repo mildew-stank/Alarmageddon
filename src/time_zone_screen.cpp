@@ -59,9 +59,7 @@ void TimeZoneScreen::select()
         setActiveScreen(CUSTOM_TZ_SCREEN);
     else
     {
-        Serial.println(tzRegions[selectedIndex]);
-        Serial.println(tzStrings[selectedIndex - 1]);
-        tzString = tzStrings[selectedIndex - 1];
+        strncpy(tzString, tzStrings[selectedIndex - 1], 37);
         setenv("TZ", tzString, 1);
         tzset();
         setActiveScreen(WIFI);
