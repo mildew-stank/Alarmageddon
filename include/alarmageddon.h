@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include <ESP32Encoder.h>
 #include <esp_now.h>
+#include <esp_wifi.h>
 #include <Preferences.h>
 #include <WiFi.h>
 
@@ -218,14 +219,13 @@ private:
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x48, 0x20, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x4a, 0x08, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x22, 0x44, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};*/
-    const char optionsList[5][16] = {"Back", "Set time", "Set time zone", "24 hour", "Display seconds"};
-    enum SettingsButtons // TODO: implement in settings_screen.cpp
+    const char optionsList[4][16] = {"Back", "Set time", "24 hour", "Display seconds"};
+    enum SettingsButtons
     {
         BACK = 0,
         SET_TIME = 1,
-        SET_TIME_ZONE = 2,
-        HOUR_FORMAT = 3,
-        SECONDS_FORMAT = 4
+        HOUR_FORMAT = 2,
+        SECONDS_FORMAT = 3
     };
 
 public:
@@ -400,7 +400,7 @@ private:
     short hour, minute;
     char customTz[37];
     char sign = '+';
-    void CustomTzScreen::adjustValue(short parameter, short value);
+    void adjustValue(short parameter, short value);
 
 public:
     void setup() override;

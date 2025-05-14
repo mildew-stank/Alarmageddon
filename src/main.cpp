@@ -1,6 +1,5 @@
-// TODO: need a way to set up the remote and see if its available when/before alarm goes off. dont forget to save the mac addr
+// TODO: need a page to set up the remote/peer and see if its available when/before alarm goes off. dont forget to save the mac addr
 // uniform progress animations on wifi, ntp, & ap scan screens. do something with init screen or remove it.
-// my bedounce time is massive, bad button? seems so
 
 #include "alarmageddon.h"
 
@@ -17,7 +16,8 @@ const unsigned short buzzerPin = 19;
 
 struct struct_message
 {
-    bool isPressed;
+    unsigned char deviceCode = 216; // TODO: make this code a user setting to allow multiple pairings in the same area
+    unsigned char mac[6];
 };
 
 Adafruit_SSD1306 display(screenWidth, screenHeight, &Wire);
@@ -35,7 +35,7 @@ const unsigned short titleSize = 1;
 unsigned short visibleCount = 3;
 #endif
 char tzString[37];
-unsigned char broadcastAddress[6] = {0xdc, 0x06, 0x75, 0xe7, 0x82, 0x14};
+unsigned char broadcastAddress[6];
 int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
@@ -117,15 +117,10 @@ void sendData()
 {
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&message, sizeof(message));
 
-    message.isPressed = true;
     if (result == ESP_OK)
-    {
         Serial.println("ESP-Now sent");
-    }
     else
-    {
         Serial.println("ESP-Now send failed");
-    }
 }
 
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
@@ -136,11 +131,32 @@ void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 void onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
     memcpy(&message, incomingData, sizeof(message));
+    if (message.deviceCode != 216)
+    {
+        Serial.println("Wrong device code received");
+        return;
+    }
     Serial.print("ESP-Now data received: ");
-    Serial.println(message.isPressed);
-    if (message.isPressed)
-        alarmOn = false;
+    Serial.print(message.deviceCode);
+    Serial.printf(" %02x%02x%02x%02x%02x%02x\n", message.mac[0], message.mac[1], message.mac[2], message.mac[3], message.mac[4], message.mac[5]);
 }
+
+void broadcastMacAddress()
+{
+    if (esp_read_mac(message.mac, ESP_MAC_WIFI_STA) != ESP_OK)
+    {
+        Serial.println("Failed to get MAC");
+        return;
+    }
+    Serial.printf("Broadcasting MAC %02x%02x%02x%02x%02x%02x\n", message.mac[0], message.mac[1], message.mac[2], message.mac[3], message.mac[4], message.mac[5]);
+    // memset(broadcastAddress, 0xFF, sizeof(broadcastAddress));
+    sendData();
+}
+
+// void listenForMacAddress()
+//{
+//
+// }
 
 void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
 {
@@ -328,7 +344,7 @@ void saveSettings()
     preferences.putBool("is24Hour", is24Hour);
     preferences.putBool("displaysSeconds", displaysSeconds);
     preferences.putBytes("tzString", tzString, 37);
-    preferences.putBytes("broadcastAddress", broadcastAddress, 6);
+    preferences.putBytes("peerMac", broadcastAddress, 6);
     preferences.end();
 }
 
@@ -342,7 +358,7 @@ void loadSettings()
     is24Hour = preferences.getBool("is24Hour", 0);
     displaysSeconds = preferences.getBool("displaysSeconds", 0);
     preferences.getBytes("tzString", tzString, 37);
-    preferences.getBytes("broadcastAddress", broadcastAddress, 6);
+    preferences.getBytes("peerMac", broadcastAddress, 6);
     preferences.end();
 }
 
@@ -427,6 +443,7 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
 
 bool startEspNow()
 {
+    WiFi.mode(WIFI_STA);
     if (esp_now_init() != ESP_OK)
     {
         Serial.println("ESP-Now init failed");
@@ -484,8 +501,20 @@ void setup()
     if (!connectToScreen())
         return; // this is catastrophic
     loadSettings();
-    connectToWifi("", "", true);
+    // connectToWifi("", "", true); //
+    memset(broadcastAddress, 0xFF, sizeof(broadcastAddress)); //
     startEspNow();
+
+    // making sure on same channel for testing
+    esp_wifi_set_promiscuous(true);
+    esp_wifi_set_channel(11, WIFI_SECOND_CHAN_NONE);
+    esp_wifi_set_promiscuous(false);
+    Serial.print("Wifi channel ");
+    Serial.println(WiFi.channel());
+    broadcastMacAddress(); //
+    // TODO: connect to wifi only to sync, then default back to channel 1. or display channel on wifi settings and a
+    // message to state that both clock and remote must be on same channel and have it be user settable
+
     setActiveScreen(CLOCK);
 }
 
