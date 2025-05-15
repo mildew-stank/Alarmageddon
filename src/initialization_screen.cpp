@@ -1,6 +1,7 @@
 // NOTE: currently just an animation test screen
 
-#include <alarmageddon.h>
+#include "initialization_screen.h"
+#include "alarmageddon.h"
 
 const unsigned char bird1[] PROGMEM = {
     0x00, 0x00, 0x00, 0xee, 0x10, 0x00, 0x00, 0x00};

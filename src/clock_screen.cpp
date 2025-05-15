@@ -1,3 +1,4 @@
+#include "clock_screen.h"
 #include "alarmageddon.h"
 
 void ClockScreen::setup()
@@ -79,7 +80,7 @@ const char *ClockScreen::getDayOfWeekName(int day)
 
 void ClockScreen::left()
 {
-    setActiveScreen(SETTINGS);
+    setActiveScreen(WIFI_SCREEN);
 }
 
 void ClockScreen::right()

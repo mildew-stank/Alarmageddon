@@ -1,3 +1,7 @@
+// TODO: instead of saiyng open just show the list but dont have anything selected until pressing the button
+// or more likely just put these settings on clock screen
+
+#include "settings_screen.h"
 #include "alarmageddon.h"
 
 void SettingsScreen::setup()
@@ -75,7 +79,7 @@ void SettingsScreen::right()
         }
     }
     else
-        setActiveScreen(CLOCK);
+        container[++screenIndex]->setup();
 }
 
 void SettingsScreen::select()
@@ -89,7 +93,7 @@ void SettingsScreen::select()
     }
     else if (selectedIndex == SET_TIME)
     {
-        setActiveScreen(SET_CLOCK);
+        setActiveScreen(SET_CLOCK_SCREEN);
         return;
     }
     else if (selectedIndex == HOUR_FORMAT)

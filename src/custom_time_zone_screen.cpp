@@ -1,4 +1,5 @@
-#include <alarmageddon.h>
+#include "custom_tz_screen.h"
+#include "alarmageddon.h"
 
 void CustomTzScreen::setup()
 {
@@ -102,7 +103,7 @@ void CustomTzScreen::select()
         strncpy(tzString, customTz, 37);
         setenv("TZ", customTz, 1);
         tzset();
-        setActiveScreen(WIFI);
+        setActiveScreen(WIFI_SCREEN);
         return;
     }
     render();

@@ -1,3 +1,4 @@
+#include "set_clock_screen.h"
 #include "alarmageddon.h"
 
 void SetClockScreen::setup()
@@ -188,7 +189,7 @@ void SetClockScreen::select()
         time_t epoch = mktime(&t);
         struct timeval tv = {.tv_sec = epoch, .tv_usec = 0};
         settimeofday(&tv, NULL); // if i do this region isnt really doing anything so move it to wifi settings maybe? otherwise users may need to set utc time for a proper sync wuld have to test tzset and setenv
-        setActiveScreen(SETTINGS);
+        setActiveScreen(SETTINGS_SCREEN);
         return;
     }
     render();

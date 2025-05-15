@@ -1,3 +1,4 @@
+#include "ap_list_screen.h"
 #include "alarmageddon.h"
 
 void ApListScreen::setup()
@@ -34,16 +35,18 @@ void ApListScreen::render()
     for (short i = 0; i < visibleCount; i++)
     {
         short currentIndex = topIndex + i;
-        short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
 
         if (currentIndex >= length)
             break;
         display.setCursor(10, display.getCursorY());
         printSelectable(currentIndex == selectedIndex, ssidBuffer[currentIndex]);
         display.println();
-        if (currentIndex == 0)
-            break;
-        display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, currentIndex != selectedIndex);
+        if (currentIndex > 0)
+        {
+            short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
+
+            display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, WHITE);
+        }
     }
     display.display();
 }
@@ -70,7 +73,7 @@ short ApListScreen::rssiToBars(int rssi)
 void ApListScreen::populateList()
 {
     unsigned int amountOfEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]); // sizeof ssidBuffer x * y so divide
-    short maxEntries = amountOfEntries - 1;                           // and reserve 1 for "Back"
+    short maxEntries = amountOfEntries - 1;                                    // and reserve 1 for "Back"
     short scanCount = WiFi.scanComplete();
 
     length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
@@ -113,10 +116,10 @@ void ApListScreen::select()
     if (selectedIndex == 0)
     {
         WiFi.scanDelete();
-        setActiveScreen(WIFI);
+        setActiveScreen(WIFI_SCREEN);
         return;
     }
     strncpy(ssid, WiFi.SSID(selectedIndex - 1).c_str(), 32);
     WiFi.scanDelete();
-    setActiveScreen(PASSWORD);
+    setActiveScreen(PASSWORD_SCREEN);
 }

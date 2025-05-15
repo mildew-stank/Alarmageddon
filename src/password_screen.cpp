@@ -1,5 +1,6 @@
 // TODO: render just the rightmost part of the password if its too long to fit on screen. either same way as charlist scroll or maybe just offset the cursor with gettextbounds
 
+#include "password_screen.h"
 #include "alarmageddon.h"
 
 void PasswordScreen::setup()
@@ -134,12 +135,12 @@ void PasswordScreen::select()
     {
         strcpy(password, passwordPreview);
         connectToWifi(ssid, password);
-        setActiveScreen(WIFI);
+        setActiveScreen(WIFI_SCREEN);
         return;
     }
     else if (selectedIndex == BACK)
     {
-        setActiveScreen(AP_LIST);
+        setActiveScreen(AP_LIST_SCREEN);
         return;
     }
     render();

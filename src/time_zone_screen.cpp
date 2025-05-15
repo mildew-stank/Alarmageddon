@@ -1,4 +1,5 @@
-#include <alarmageddon.h>
+#include "time_zone_screen.h"
+#include "alarmageddon.h"
 
 void TimeZoneScreen::setup()
 {
@@ -52,7 +53,7 @@ void TimeZoneScreen::select()
 {
     if (selectedIndex == 0)
     {
-        setActiveScreen(WIFI);
+        setActiveScreen(WIFI_SCREEN);
         return;
     }
     else if (selectedIndex == 15)
@@ -62,6 +63,6 @@ void TimeZoneScreen::select()
         strncpy(tzString, tzStrings[selectedIndex - 1], 37);
         setenv("TZ", tzString, 1);
         tzset();
-        setActiveScreen(WIFI);
+        setActiveScreen(WIFI_SCREEN);
     }
 }

@@ -1,5 +1,16 @@
-// TODO: need a page to set up the remote/peer and see if its available when/before alarm goes off. dont forget to save the mac addr
+// TODO:
+// need a page to set up the remote/peer and see if its available when/before alarm goes off. dont forget to save the mac addr
 // uniform progress animations on wifi, ntp, & ap scan screens. do something with init screen or remove it.
+
+// NOTE:
+// if both clock and remote are same. remote screen: set pairing code, set channel, send, receive.
+// set pairing code sets message.devicecode.
+// set channel sets and saves the wifi channel for espnow, but i think this breaks wifi connection if its different so it might be wise to only connect to wifi to sync and then disconnect
+// send runs broadcastMacAddress and makes sure to connect to peer FF first and prints "sending pair request"
+// receive waits for onDataReceived to get something and then saves the mac addr and prints "request received"
+// NOTE:
+// if the remote is just a remote then the device code is always 216 and the channel is always 1, and send happens on power-on
+// that means the clocks options are just receive, which may as well go in wifi settings as "pair remote"
 
 #include "alarmageddon.h"
 
@@ -62,7 +73,7 @@ InitializationScreen is;
 SetClockScreen sc;
 TimeZoneScreen rs;
 CustomTzScreen ct;
-MenuScreen *container[10] = {&cs, &as, &ws, &ss, &ls, &ps, &is, &sc, &rs, &ct};
+MenuScreen *container[10] = {&cs, &as, &ss, &ws, &ls, &ps, &is, &sc, &rs, &ct};
 
 void handleAlarmEvent()
 {
@@ -98,8 +109,8 @@ void handleAlarmPattern()
         digitalWrite(buzzerPin, LOW);
         return;
     }
-    float phaseTime = 5000.0f;
-    float phase = (millis() % 5000) / phaseTime * 2.0f * PI;
+    int phaseTime = 30000;
+    float phase = (millis() % phaseTime) / phaseTime * 2.0f * PI;
     float cosValue = cos(phase);
     float minInterval = 100.0f;
     float maxInterval = 1000.0f;
@@ -152,11 +163,6 @@ void broadcastMacAddress()
     // memset(broadcastAddress, 0xFF, sizeof(broadcastAddress));
     sendData();
 }
-
-// void listenForMacAddress()
-//{
-//
-// }
 
 void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
 {
@@ -235,7 +241,7 @@ void printSelectable(bool isSelected, const char *text)
     int16_t x, y;
     uint16_t w, h;
 
-    display.getTextBounds(text, display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
+    display.getTextBounds(text, display.getCursorX(), display.getCursorY(), &x, &y, &w, &h); // TODO: why not just use settextcolor(black,white) at this point?
     display.fillRect(x, y, w, h, isSelected);
     display.setTextColor(!isSelected);
     display.print(text);
@@ -401,7 +407,7 @@ bool connectToNtp()
 
 bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved, bool tryNtp)
 {
-    // TODO: should probably be a ConnectionScreen class
+    // TODO: should probably be renamed sync to wifi
     int wifiAttempts = 5;
     wl_status_t wifiStatus;
 
@@ -438,6 +444,7 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
     }
     if (tryNtp)
         connectToNtp();
+    // WiFi.disconnect(); // TODO: get rid of some redundant disconnects with this here
     return true;
 }
 
@@ -501,21 +508,23 @@ void setup()
     if (!connectToScreen())
         return; // this is catastrophic
     loadSettings();
-    // connectToWifi("", "", true); //
+    Serial.print("Wifi channel ");
+    Serial.println(WiFi.channel());
+    connectToWifi("", "", true);                              //
     memset(broadcastAddress, 0xFF, sizeof(broadcastAddress)); //
     startEspNow();
 
     // making sure on same channel for testing
-    esp_wifi_set_promiscuous(true);
-    esp_wifi_set_channel(11, WIFI_SECOND_CHAN_NONE);
-    esp_wifi_set_promiscuous(false);
-    Serial.print("Wifi channel ");
-    Serial.println(WiFi.channel());
-    broadcastMacAddress(); //
+    // esp_wifi_set_promiscuous(true);
+    // esp_wifi_set_channel(11, WIFI_SECOND_CHAN_NONE);
+    // esp_wifi_set_promiscuous(false);
+    //Serial.print("Wifi channel ");
+    //Serial.println(WiFi.channel());
+    //broadcastMacAddress(); //
     // TODO: connect to wifi only to sync, then default back to channel 1. or display channel on wifi settings and a
     // message to state that both clock and remote must be on same channel and have it be user settable
 
-    setActiveScreen(CLOCK);
+    setActiveScreen(CLOCK_SCREEN);
 }
 
 void loop()

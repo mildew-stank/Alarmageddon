@@ -1,3 +1,4 @@
+#include "alarm_screen.h"
 #include "alarmageddon.h"
 
 void AlarmScreen::setup()

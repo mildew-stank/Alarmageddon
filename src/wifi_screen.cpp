@@ -1,3 +1,4 @@
+#include "wifi_screen.h"
 #include "alarmageddon.h"
 
 void WifiScreen::setup()
@@ -26,9 +27,15 @@ void WifiScreen::render()
     printCenteredTextX("Wifi\n");
     if (!buttonPressed)
     {
-        display.setTextSize(2);
-        display.setCursor(getCenteredCursorX("Open"), display.getCursorY() + 4); // 4 is essentially half-padding plus 2 pixels, and 2 pixels is the gap from text on the above line
-        printButton(4, 4, "Open");
+        display.setTextSize(1);
+        display.printf("SSID: %s\n", ssid);
+        if (WiFi.channel() == 0)
+            display.print("Channel:\n");
+        else
+            display.printf("Channel: %i\n", WiFi.channel());
+        display.println("Remote:");
+        //display.setTextColor(BLACK, WHITE);
+        //printCenteredTextX("Settings");
     }
     else
     {
@@ -39,10 +46,7 @@ void WifiScreen::render()
             short currentIndex = topIndex + i;
 
             display.setCursor(1, display.getCursorY());
-            if (wifiStatus == WL_CONNECTED)
-                printSelectable(currentIndex == selectedIndex, connectedList[currentIndex]);
-            else
-                printSelectable(currentIndex == selectedIndex, disconnectedList[currentIndex]);
+            printSelectable(currentIndex == selectedIndex, optionsList[currentIndex]);
             display.println();
         }
     }
@@ -64,10 +68,10 @@ void WifiScreen::left()
 
 void WifiScreen::right()
 {
-    short length = (wifiStatus == WL_CONNECTED) ? 3 : 4;
+    short length = (sizeof(optionsList) / sizeof(optionsList[0])) - 1;
 
     if (!buttonPressed)
-        container[++screenIndex]->setup();
+        setActiveScreen(CLOCK_SCREEN);
     else if (selectedIndex < length)
     {
         selectedIndex++;
@@ -80,44 +84,24 @@ void WifiScreen::right()
 void WifiScreen::select()
 {
     if (!buttonPressed)
-    {
         buttonPressed = true;
-        render();
-        return;
-    }
-    if (selectedIndex == 0)
+    else if (selectedIndex == BACK)
     {
         buttonPressed = false;
         saveSettings();
     }
-    else if (wifiStatus == WL_CONNECTED)
+    else if (selectedIndex == ACCESS_POINTS)
     {
-        if (selectedIndex == 1)
-            WiFi.disconnect();
-        else if (selectedIndex == 2)
-        {
-            setActiveScreen(TIME_ZONE);
-            return;
-        }
-        else if (selectedIndex == 3)
-            connectToNtp();
+        setActiveScreen(AP_LIST_SCREEN);
+        return;
     }
-    else
+    else if (selectedIndex == SET_TIME_ZONE)
     {
-        if (selectedIndex == 1)
-            connectToWifi("", "", true);
-        else if (selectedIndex == 2)
-        {
-            setActiveScreen(AP_LIST);
-            return;
-        }
-        else if (selectedIndex == 3)
-        {
-            setActiveScreen(TIME_ZONE);
-            return;
-        }
-        else if (selectedIndex == 4)
-            connectToNtp();
+        setActiveScreen(TIME_ZONE_SCREEN);
+        return;
     }
+    else if (selectedIndex == SYNCHRONIZE_CLOCK)
+        connectToNtp();
+    // connectToWifi("", "", true);
     render();
 }
