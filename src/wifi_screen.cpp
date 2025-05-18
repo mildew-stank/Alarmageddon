@@ -39,9 +39,12 @@ void WifiScreen::render()
     }
     else
     {
+        unsigned int listLength = sizeof(optionsList) / sizeof(optionsList[0]);
+        unsigned short adjustedVisibleCount = (listLength < visibleCount) ? listLength : visibleCount;
+
         display.setTextSize(1);
         display.fillRect(0, titleSize * 8, screenWidth, screenHeight - (titleSize * 8), BLACK); // this clears the area below the title
-        for (short i = 0; i < visibleCount; i++)
+        for (short i = 0; i < adjustedVisibleCount; i++)
         {
             short currentIndex = topIndex + i;
 
