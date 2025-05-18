@@ -33,7 +33,7 @@ void WifiScreen::render()
             display.print("Channel:\n");
         else
             display.printf("Channel: %i\n", WiFi.channel());
-        display.println("Remote:");
+        display.println("Remote:"); // TODO: make this do something
         //display.setTextColor(BLACK, WHITE);
         //printCenteredTextX("Settings");
     }
