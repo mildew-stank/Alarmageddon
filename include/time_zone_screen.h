@@ -4,7 +4,7 @@
 class TimeZoneScreen : public MenuScreen
 {
 private:
-    const char *tzRegions[16] = {
+    const char *optionsList[16] = {
         "Back",
         "America/Honolulu",    // HST10
         "America/Anchorage",   // AKST9AKDT,M3.2.0/2,M11.1.0/2

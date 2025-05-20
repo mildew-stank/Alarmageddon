@@ -22,36 +22,19 @@ void WifiScreen::loop()
 
 void WifiScreen::render()
 {
+    unsigned short adjustedVisibleCount = minCount(visibleCount, sizeof(optionsList) / sizeof(optionsList[0]));
+
     setDisplayToDefault();
     display.setTextSize(titleSize);
     printCenteredTextX("Wifi\n");
-    if (!buttonPressed)
+    display.setTextSize(1);
+    for (short i = 0; i < adjustedVisibleCount; i++)
     {
-        display.setTextSize(1);
-        display.printf("SSID: %s\n", ssid);
-        if (WiFi.channel() == 0)
-            display.print("Channel:\n");
-        else
-            display.printf("Channel: %i\n", WiFi.channel());
-        display.println("Remote:"); // TODO: make this do something
-        //display.setTextColor(BLACK, WHITE);
-        //printCenteredTextX("Settings");
-    }
-    else
-    {
-        unsigned int listLength = sizeof(optionsList) / sizeof(optionsList[0]);
-        unsigned short adjustedVisibleCount = (listLength < visibleCount) ? listLength : visibleCount;
+        short currentIndex = topIndex + i;
 
-        display.setTextSize(1);
-        display.fillRect(0, titleSize * 8, screenWidth, screenHeight - (titleSize * 8), BLACK); // this clears the area below the title
-        for (short i = 0; i < adjustedVisibleCount; i++)
-        {
-            short currentIndex = topIndex + i;
-
-            display.setCursor(1, display.getCursorY());
-            printSelectable(currentIndex == selectedIndex, optionsList[currentIndex]);
-            display.println();
-        }
+        display.setCursor(10, display.getCursorY());
+        printSelectable(buttonPressed && currentIndex == selectedIndex, optionsList[currentIndex], true);
+        display.println();
     }
     display.display();
 }

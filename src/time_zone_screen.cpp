@@ -12,16 +12,18 @@ void TimeZoneScreen::loop()
 
 void TimeZoneScreen::render()
 {
+    unsigned short adjustedVisibleCount = minCount(visibleCount, sizeof(optionsList) / sizeof(optionsList[0]));
+
     setDisplayToDefault();
     display.setTextSize(titleSize);
     printCenteredTextX("Time Zone\n");
     display.setTextSize(1);
-    for (short i = 0; i < visibleCount; i++)
+    for (short i = 0; i < adjustedVisibleCount; i++)
     {
         short currentIndex = topIndex + i;
 
         display.setCursor(1, display.getCursorY());
-        printSelectable(currentIndex == selectedIndex, tzRegions[currentIndex]);
+        printSelectable(currentIndex == selectedIndex, optionsList[currentIndex], true);
         display.println();
     }
     display.display();

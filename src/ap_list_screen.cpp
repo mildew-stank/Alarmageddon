@@ -25,37 +25,32 @@ void ApListScreen::loop()
 
 void ApListScreen::render()
 {
+    unsigned short adjustedVisibleCount = minCount(visibleCount, entryCount);
+
     setDisplayToDefault();
     display.setTextSize(titleSize);
-    if (length > 1)
+    if (entryCount > 1)
         printCenteredTextX("Networks\n");
     else
         printCenteredTextX("Scanning\n");
     display.setTextSize(1);
-    for (short i = 0; i < visibleCount; i++)
+    for (short i = 0; i < adjustedVisibleCount; i++)
     {
         short currentIndex = topIndex + i;
 
-        if (currentIndex >= length)
+        if (currentIndex >= entryCount)
             break;
         display.setCursor(10, display.getCursorY());
-        printSelectable(currentIndex == selectedIndex, ssidBuffer[currentIndex]);
-        display.println();
+        printSelectable(currentIndex == selectedIndex, ssidList[currentIndex], true);
         if (currentIndex > 0)
         {
             short bars = rssiToBars(WiFi.RSSI(currentIndex - 1));
 
-            display.drawBitmap(1, (i + titleSize) * 8, wifiSig[bars], 8, 8, WHITE);
+            display.drawBitmap(1, display.getCursorY(), wifiSig[bars], 8, 8, WHITE);
         }
+        display.println();
     }
     display.display();
-}
-
-int ApListScreen::min(int a, int b)
-{
-    if (a < 0 || b < 0)
-        return 0;
-    return (a < b) ? a : b;
 }
 
 short ApListScreen::rssiToBars(int rssi)
@@ -72,16 +67,16 @@ short ApListScreen::rssiToBars(int rssi)
 
 void ApListScreen::populateList()
 {
-    unsigned int amountOfEntries = sizeof(ssidBuffer) / sizeof(ssidBuffer[0]); // sizeof ssidBuffer x * y so divide
-    short maxEntries = amountOfEntries - 1;                                    // and reserve 1 for "Back"
+    unsigned int amountOfEntries = sizeof(ssidList) / sizeof(ssidList[0]); // sizeof ssidBuffer x * y so divide
+    short maxEntries = amountOfEntries - 1;                                // and reserve 1 for "Back"
     short scanCount = WiFi.scanComplete();
 
-    length = min(scanCount, maxEntries) + 1; // + 1 for "Back"
-    strncpy(ssidBuffer[0], "Back", sizeof(ssidBuffer[0]) - 1);
-    for (short i = 1; i < length; i++)
+    entryCount = minCount(scanCount, maxEntries) + 1; // + 1 for "Back"
+    strncpy(ssidList[0], "Back", sizeof(ssidList[0]) - 1);
+    for (short i = 1; i < entryCount; i++)
     {
-        strncpy(ssidBuffer[i], WiFi.SSID(i - 1).c_str(), sizeof(ssidBuffer[0]) - 1);
-        ssidBuffer[i][amountOfEntries - 1] = '\0'; // return null terminator to the end of truncated strings
+        strncpy(ssidList[i], WiFi.SSID(i - 1).c_str(), sizeof(ssidList[0]) - 1);
+        ssidList[i][amountOfEntries - 1] = '\0'; // return null terminator to the end of truncated strings
     }
 }
 
@@ -91,22 +86,18 @@ void ApListScreen::left()
     {
         selectedIndex--;
         if (selectedIndex < topIndex)
-        {
             topIndex--;
-        }
         render();
     }
 }
 
 void ApListScreen::right()
 {
-    if (selectedIndex < length - 1)
+    if (selectedIndex < entryCount - 1)
     {
         selectedIndex++;
         if (selectedIndex >= topIndex + visibleCount)
-        {
             topIndex++;
-        }
         render();
     }
 }

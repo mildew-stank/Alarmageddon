@@ -236,12 +236,13 @@ void printCenteredTextX(const char *text, bool newLine)
         display.println();
 }
 
-void printSelectable(bool isSelected, const char *text)
+void printSelectable(bool isSelected, const char *text, bool fullLength) // TODO: use fullLength on the lists
 {
     int16_t x, y;
     uint16_t w, h;
 
-    display.getTextBounds(text, display.getCursorX(), display.getCursorY(), &x, &y, &w, &h); // TODO: why not just use settextcolor(black,white) at this point?
+    display.getTextBounds(text, display.getCursorX(), display.getCursorY(), &x, &y, &w, &h);
+    w = (fullLength) ? screenWidth - x : w;
     display.fillRect(x, y, w, h, isSelected);
     display.setTextColor(!isSelected);
     display.print(text);
@@ -295,6 +296,13 @@ void setActiveScreen(int nextIndex)
 {
     screenIndex = nextIndex;
     container[screenIndex]->setup();
+}
+
+int minCount(int a, int b)
+{
+    if (a < 0 || b < 0)
+        return 0;
+    return (a < b) ? a : b;
 }
 
 /*Returns the hour as .first of the pair, and the meridian as .second.*/
@@ -518,9 +526,9 @@ void setup()
     // esp_wifi_set_promiscuous(true);
     // esp_wifi_set_channel(11, WIFI_SECOND_CHAN_NONE);
     // esp_wifi_set_promiscuous(false);
-    //Serial.print("Wifi channel ");
-    //Serial.println(WiFi.channel());
-    //broadcastMacAddress(); //
+    // Serial.print("Wifi channel ");
+    // Serial.println(WiFi.channel());
+    // broadcastMacAddress(); //
     // TODO: connect to wifi only to sync, then default back to channel 1. or display channel on wifi settings and a
     // message to state that both clock and remote must be on same channel and have it be user settable
 

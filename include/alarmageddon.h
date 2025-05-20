@@ -47,7 +47,7 @@ int getCenteredCursorX(const char *text);
 int getCenteredCursorFormattedX(unsigned short bufferSize, const char *text, ...);
 void printfCenteredTextX(unsigned short bufferSize, const char *text, ...);
 void printCenteredTextX(const char *text, bool newLine = false);
-void printSelectable(bool isSelected, const char *text);
+void printSelectable(bool isSelected, const char *text, bool fullLength = false);
 void printfSelectable(unsigned short bufferSize, bool isSelected, const char *text, ...);
 void printButton(short padding, short radius, const char *text);
 void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h);
@@ -57,6 +57,7 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
 void setAlarmStatus(bool status);
 void setDisplayToDefault();
 void setActiveScreen(int nextIndex);
+int minCount(int a, int b);
 std::pair<unsigned short, bool> convert24To12(unsigned short hour);
 unsigned short convert12To24(unsigned short hour, bool isPM);
 int wrapNumber(int number, int min, int max);

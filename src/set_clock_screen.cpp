@@ -88,7 +88,6 @@ void SetClockScreen::render()
             printfSelectable(3, selectionIndex == 2, "%02i", clockSecond);
             display.setTextSize(1);
             centeredX = getCenteredCursorFormattedX(7, "%s %s", meridian[0], displayDay);
-            // centeredX = getCenteredCursorX(meridian[0]);
             display.println("\n");
             display.setCursor(centeredX, display.getCursorY());
             printSelectable(selectionIndex == 3, meridian[isPM]);
