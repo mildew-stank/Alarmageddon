@@ -87,7 +87,7 @@ void WifiScreen::select()
         return;
     }
     else if (selectedIndex == SYNCHRONIZE_CLOCK)
-        connectToNtp();
-    // connectToWifi("", "", true);
+        // connectToNtp();
+        connectToWifi("", "", true);
     render();
 }

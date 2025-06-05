@@ -2,16 +2,6 @@
 // need a page to set up the remote/peer and see if its available when/before alarm goes off. dont forget to save the mac addr
 // uniform progress animations on wifi, ntp, & ap scan screens. do something with init screen or remove it.
 
-// NOTE:
-// if both clock and remote are same. remote screen: set pairing code, set channel, send, receive.
-// set pairing code sets message.devicecode.
-// set channel sets and saves the wifi channel for espnow, but i think this breaks wifi connection if its different so it might be wise to only connect to wifi to sync and then disconnect
-// send runs broadcastMacAddress and makes sure to connect to peer FF first and prints "sending pair request"
-// receive waits for onDataReceived to get something and then saves the mac addr and prints "request received"
-// NOTE:
-// if the remote is just a remote then the device code is always 216 and the channel is always 1, and send happens on power-on
-// that means the clocks options are just receive, which may as well go in wifi settings as "pair remote"
-
 #include "alarmageddon.h"
 
 #if defined(HEIGHT_64)
@@ -27,7 +17,7 @@ const unsigned short buzzerPin = 19;
 
 struct struct_message
 {
-    unsigned char deviceCode = 216; // TODO: make this code a user setting to allow multiple pairings in the same area
+    const unsigned char deviceCode = 216; // TODO: look for better way of doing this
     unsigned char mac[6];
 };
 
@@ -126,12 +116,9 @@ void handleAlarmPattern()
 
 void sendData()
 {
-    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&message, sizeof(message));
+    esp_err_t status = esp_now_send(broadcastAddress, (uint8_t *)&message, sizeof(message));
 
-    if (result == ESP_OK)
-        Serial.println("ESP-Now sent");
-    else
-        Serial.println("ESP-Now send failed");
+    Serial.println(status == ESP_OK ? "ESP-Now sent" : "ESP-Now send failed");
 }
 
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
@@ -331,7 +318,6 @@ int wrapNumber(int number, int min, int max)
 void saveCredentials()
 {
     preferences.begin("credentials", false);
-    preferences.clear();
     preferences.putString("ssid", ssid);
     preferences.putString("password", password);
     preferences.end();
@@ -350,10 +336,9 @@ void loadCredentials()
 void saveSettings()
 {
     preferences.begin("settings", false);
-    preferences.clear();
     preferences.putShort("alarmHour", alarmHour);
     preferences.putShort("alarmMinute", alarmMinute);
-    preferences.putBool("alarmOn", alarmOn);
+    // preferences.putBool("alarmOn", alarmOn);
     preferences.putBool("alarmSet", alarmSet);
     preferences.putBool("is24Hour", is24Hour);
     preferences.putBool("displaysSeconds", displaysSeconds);
@@ -367,7 +352,7 @@ void loadSettings()
     preferences.begin("settings", true);
     alarmHour = preferences.getShort("alarmHour", 0);
     alarmMinute = preferences.getShort("alarmMinute", 0);
-    alarmOn = preferences.getBool("alarmOn", 0);
+    // alarmOn = preferences.getBool("alarmOn", 0);
     alarmSet = preferences.getBool("alarmSet", 0);
     is24Hour = preferences.getBool("is24Hour", 0);
     displaysSeconds = preferences.getBool("displaysSeconds", 0);
@@ -452,7 +437,22 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
     }
     if (tryNtp)
         connectToNtp();
-    // WiFi.disconnect(); // TODO: get rid of some redundant disconnects with this here
+    WiFi.disconnect(); // TODO: get rid of some redundant disconnects with this here
+    return true;
+}
+
+bool addEspNowPeer(unsigned char mac[6], bool broadcastToAll = false) // TODO: implement me
+{
+    if (broadcastToAll)
+        memset(mac, 0xFF, 6);
+    memcpy(peerInfo.peer_addr, mac, 6);
+    peerInfo.channel = 0;
+    peerInfo.encrypt = false;
+    if (esp_now_add_peer(&peerInfo) != ESP_OK)
+    {
+        Serial.println("ESP-Now adding failed");
+        return false;
+    }
     return true;
 }
 
@@ -462,14 +462,6 @@ bool startEspNow()
     if (esp_now_init() != ESP_OK)
     {
         Serial.println("ESP-Now init failed");
-        return false;
-    }
-    memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-    peerInfo.channel = 0;
-    peerInfo.encrypt = false;
-    if (esp_now_add_peer(&peerInfo) != ESP_OK)
-    {
-        Serial.println("ESP-Now adding failed");
         return false;
     }
     if (esp_now_register_recv_cb(onDataReceived) != ESP_OK)
@@ -489,7 +481,7 @@ void handleInput()
 {
     static unsigned long buttonMillis; // static keeps the var from being redefined on subsequent calls, its essentially a global in memory but not scope
     int newPage = knob.getCount() / 2;
-    unsigned long debounceMillis = 300; // this is an order of magnituder longer than id like but the switch isnt doing well it seems
+    const unsigned long debounceMillis = 300; // this is an order of magnituder longer than id like but the switch isnt doing well it seems
 
     if (newPage != oldPage)
     {
@@ -507,6 +499,18 @@ void handleInput()
     buttonStatePrevious = digitalRead(buttonPin);
 }
 
+void EnterErrorMode(short beeps, bool isCatastrophic)
+{
+    for (short i = 0; i < beeps; i++)
+    {
+        digitalWrite(buzzerPin, HIGH);
+        delay(100);
+        digitalWrite(buzzerPin, LOW);
+        delay(50);
+    }
+    esp_deep_sleep_start();
+}
+
 void setup()
 {
     Serial.begin(921600);
@@ -514,24 +518,12 @@ void setup()
     pinMode(buzzerPin, OUTPUT);
     knob.attachHalfQuad(encoderPinA, encoderPinB);
     if (!connectToScreen())
-        return; // this is catastrophic
+        EnterErrorMode(3, true);
     loadSettings();
     Serial.print("Wifi channel ");
     Serial.println(WiFi.channel());
-    connectToWifi("", "", true);                              //
-    memset(broadcastAddress, 0xFF, sizeof(broadcastAddress)); //
+    connectToWifi("", "", true);
     startEspNow();
-
-    // making sure on same channel for testing
-    // esp_wifi_set_promiscuous(true);
-    // esp_wifi_set_channel(11, WIFI_SECOND_CHAN_NONE);
-    // esp_wifi_set_promiscuous(false);
-    // Serial.print("Wifi channel ");
-    // Serial.println(WiFi.channel());
-    // broadcastMacAddress(); //
-    // TODO: connect to wifi only to sync, then default back to channel 1. or display channel on wifi settings and a
-    // message to state that both clock and remote must be on same channel and have it be user settable
-
     setActiveScreen(CLOCK_SCREEN);
 }
 
