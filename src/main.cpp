@@ -19,6 +19,7 @@ struct struct_message
 {
     const unsigned char deviceCode = 216; // TODO: look for better way of doing this
     unsigned char mac[6];
+    bool isPairing = false;
 };
 
 Adafruit_SSD1306 display(screenWidth, screenHeight, &Wire);
@@ -36,7 +37,7 @@ const unsigned short titleSize = 1;
 unsigned short visibleCount = 3;
 #endif
 char tzString[37];
-unsigned char broadcastAddress[6];
+unsigned char remoteAddress[6];
 int oldPage = 0;
 short buttonStatePrevious = 0;
 unsigned short note = 0;
@@ -46,10 +47,12 @@ short clockMinute = 0;
 short clockHour = 0;
 short alarmHour = 0;
 short alarmMinute = 0;
+unsigned long alarmOnMillis = 0;
 bool alarmOn = false;
 bool alarmSet = false;
 bool is24Hour = true;
 bool displaysSeconds = true;
+char pairingStatus = UNPAIRED;
 char ssid[33];
 char password[64];
 
@@ -63,7 +66,8 @@ InitializationScreen is;
 SetClockScreen sc;
 TimeZoneScreen rs;
 CustomTzScreen ct;
-MenuScreen *container[10] = {&cs, &as, &ss, &ws, &ls, &ps, &is, &sc, &rs, &ct};
+PairingScreen pm;
+MenuScreen *container[11] = {&cs, &as, &ss, &ws, &ls, &ps, &is, &sc, &rs, &ct, &pm};
 
 void handleAlarmEvent()
 {
@@ -81,16 +85,20 @@ void handleAlarmEvent()
     }
     if (timeData.tm_min != alarmMinute) // dont trigger more than once per minute
         triggeredThisMinute = false;
-    if (timeData.tm_hour != alarmHour) // dont leave the alarm on for more than an hour
+    if (alarmOn && (millis() - alarmOnMillis >= 3600000)) {
         setAlarmStatus(false);
+    }
 }
 
 void setAlarmStatus(bool status)
 {
     alarmOn = status;
+    if (status) {
+        alarmOnMillis = millis();
+    }
 }
 
-void handleAlarmPattern()
+void handleAlarmPattern() // TODO: have arma test, my buzzer seems busted. may need to switch to passive or better circuit
 {
     static bool isBeeping = true;
     static unsigned long lastToggle = 0;
@@ -114,41 +122,70 @@ void handleAlarmPattern()
     }
 }
 
-void sendData()
+bool addEspNowPeer(unsigned char mac[6], bool broadcastToAll = false) // TODO: implement me
 {
-    esp_err_t status = esp_now_send(broadcastAddress, (uint8_t *)&message, sizeof(message));
+    if (broadcastToAll)
+        memset(mac, 0xFF, 6);
+    memcpy(peerInfo.peer_addr, mac, 6);
+    peerInfo.channel = 0;
+    peerInfo.encrypt = false;
+    if (esp_now_add_peer(&peerInfo) != ESP_OK)
+    {
+        Serial.println("ESP-Now adding failed");
+        return false;
+    }
+    return true;
+}
 
+void sendMessage(unsigned char mac[6])
+{
+    esp_err_t status = esp_now_send(mac, (uint8_t *)&message, sizeof(message));
     Serial.println(status == ESP_OK ? "ESP-Now sent" : "ESP-Now send failed");
 }
 
-void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
+void onMessageSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
     Serial.println(status == ESP_NOW_SEND_SUCCESS ? "ESP-Now send succeeded" : "ESP-Now send failed");
+    if (status == ESP_NOW_SEND_SUCCESS && pairingStatus == PAIRING) {
+        Serial.println("Pair confirmation sent");
+        pairingStatus = PAIRED;
+    }
 }
 
-void onDataReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
+void confirmPairRequest(unsigned char mac[6])
 {
-    memcpy(&message, incomingData, sizeof(message));
+    esp_read_mac(message.mac, ESP_MAC_WIFI_STA);
+    esp_now_del_peer(NULL);
+    addEspNowPeer(mac);
+    sendMessage(mac);
+    pairingStatus = PAIRING; // or at least it was attempted
+    memcpy(remoteAddress, mac, sizeof(remoteAddress)); // remember for next time
+
+    Serial.printf("pairing to: %02x:%02x:%02x:%02x:%02x:%02x\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    Serial.printf("with message of %02x:%02x:%02x:%02x:%02x:%02x\n", message.mac[0], message.mac[1], message.mac[2], message.mac[3], message.mac[4], message.mac[5]);
+}
+
+void onMessageReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
+{
+    memcpy(&message, incomingData, sizeof(message)); // TODO: will it crash if a different struct is sent?
+    Serial.print("ESP-Now data received");
+    Serial.printf(" %02x%02x%02x%02x%02x%02x\n", message.mac[0], message.mac[1], message.mac[2], message.mac[3], message.mac[4], message.mac[5]);
     if (message.deviceCode != 216)
     {
         Serial.println("Wrong device code received");
+        Serial.println(message.deviceCode);
         return;
     }
-    Serial.print("ESP-Now data received: ");
-    Serial.print(message.deviceCode);
-    Serial.printf(" %02x%02x%02x%02x%02x%02x\n", message.mac[0], message.mac[1], message.mac[2], message.mac[3], message.mac[4], message.mac[5]);
-}
-
-void broadcastMacAddress()
-{
-    if (esp_read_mac(message.mac, ESP_MAC_WIFI_STA) != ESP_OK)
+    if (message.isPairing && pairingStatus == WAITING)
     {
-        Serial.println("Failed to get MAC");
+        Serial.println("Pair requested");
+        confirmPairRequest(message.mac);
         return;
     }
-    Serial.printf("Broadcasting MAC %02x%02x%02x%02x%02x%02x\n", message.mac[0], message.mac[1], message.mac[2], message.mac[3], message.mac[4], message.mac[5]);
-    // memset(broadcastAddress, 0xFF, sizeof(broadcastAddress));
-    sendData();
+    if (!message.isPairing && memcmp(message.mac, remoteAddress, 6) == 0)
+    {
+        alarmOn = false;
+    }
 }
 
 void drawAnimationFrame(const unsigned char *frames[], unsigned short frameCount, unsigned short x, unsigned short y, unsigned short w, unsigned short h)
@@ -343,7 +380,7 @@ void saveSettings()
     preferences.putBool("is24Hour", is24Hour);
     preferences.putBool("displaysSeconds", displaysSeconds);
     preferences.putBytes("tzString", tzString, 37);
-    preferences.putBytes("peerMac", broadcastAddress, 6);
+    preferences.putBytes("peerMac", remoteAddress, 6);
     preferences.end();
 }
 
@@ -357,7 +394,7 @@ void loadSettings()
     is24Hour = preferences.getBool("is24Hour", 0);
     displaysSeconds = preferences.getBool("displaysSeconds", 0);
     preferences.getBytes("tzString", tzString, 37);
-    preferences.getBytes("peerMac", broadcastAddress, 6);
+    preferences.getBytes("peerMac", remoteAddress, 6);
     preferences.end();
 }
 
@@ -438,21 +475,7 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
     if (tryNtp)
         connectToNtp();
     WiFi.disconnect(); // TODO: get rid of some redundant disconnects with this here
-    return true;
-}
-
-bool addEspNowPeer(unsigned char mac[6], bool broadcastToAll = false) // TODO: implement me
-{
-    if (broadcastToAll)
-        memset(mac, 0xFF, 6);
-    memcpy(peerInfo.peer_addr, mac, 6);
-    peerInfo.channel = 0;
-    peerInfo.encrypt = false;
-    if (esp_now_add_peer(&peerInfo) != ESP_OK)
-    {
-        Serial.println("ESP-Now adding failed");
-        return false;
-    }
+    WiFi.channel(0); // for remote via esp-now
     return true;
 }
 
@@ -464,12 +487,12 @@ bool startEspNow()
         Serial.println("ESP-Now init failed");
         return false;
     }
-    if (esp_now_register_recv_cb(onDataReceived) != ESP_OK)
+    if (esp_now_register_recv_cb(onMessageReceived) != ESP_OK)
     {
         Serial.println("ESP-Now receiving failed");
         return false;
     }
-    if (esp_now_register_send_cb(onDataSent) != ESP_OK)
+    if (esp_now_register_send_cb(onMessageSent) != ESP_OK)
     {
         Serial.println("ESP-Now sending failed");
         return false;
@@ -508,7 +531,7 @@ void EnterErrorMode(short beeps, bool isCatastrophic)
         digitalWrite(buzzerPin, LOW);
         delay(50);
     }
-    esp_deep_sleep_start();
+    if (isCatastrophic) esp_deep_sleep_start();
 }
 
 void setup()

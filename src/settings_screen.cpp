@@ -1,6 +1,3 @@
-// TODO: instead of saiyng open just show the list but dont have anything selected until pressing the button
-// or more likely just put these settings on clock screen
-
 #include "settings_screen.h"
 #include "alarmageddon.h"
 

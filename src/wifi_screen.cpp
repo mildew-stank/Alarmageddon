@@ -87,7 +87,14 @@ void WifiScreen::select()
         return;
     }
     else if (selectedIndex == SYNCHRONIZE_CLOCK)
+    {
         // connectToNtp();
         connectToWifi("", "", true);
+    }
+    else if (selectedIndex == PAIRING_MODE)
+    {
+        setActiveScreen(PAIRING_SCREEN);
+        return;
+    }
     render();
 }

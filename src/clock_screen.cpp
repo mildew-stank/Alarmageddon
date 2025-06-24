@@ -90,7 +90,7 @@ void ClockScreen::right()
 
 void ClockScreen::select()
 {
-    if (alarmOn)
+    if (alarmOn && pairingStatus != PAIRED)
     {
         setAlarmStatus(false);
     }

@@ -5,7 +5,7 @@
 class WifiScreen : public MenuScreen
 {
 private:
-    const char *optionsList[4] = {"Back", "Access points", "Set time-zone", "Synchronize clock"};
+    const char *optionsList[5] = {"Back", "Access points", "Set time-zone", "Synchronize clock", "Pairing mode"};
     wl_status_t wifiStatus;
     wl_status_t wifiStatusPrevious;
     enum WifiOptions
@@ -13,7 +13,8 @@ private:
         BACK = 0,
         ACCESS_POINTS = 1,
         SET_TIME_ZONE = 2,
-        SYNCHRONIZE_CLOCK = 3
+        SYNCHRONIZE_CLOCK = 3,
+        PAIRING_MODE = 4
     };
 
 public:
