@@ -1,5 +1,4 @@
 // TODO:
-// need a page to set up the remote/peer and see if its available when/before alarm goes off. dont forget to save the mac addr
 // uniform progress animations on wifi, ntp, & ap scan screens. do something with init screen or remove it.
 
 #include "alarmageddon.h"
@@ -17,7 +16,7 @@ const unsigned short buzzerPin = 19;
 
 struct struct_message
 {
-    const unsigned char deviceCode = 216; // TODO: look for better way of doing this
+    const unsigned char deviceCode = 216;
     unsigned char mac[6];
     bool isPairing = false;
 };
@@ -71,7 +70,6 @@ MenuScreen *container[11] = {&cs, &as, &ss, &ws, &ls, &ps, &is, &sc, &rs, &ct, &
 
 void handleAlarmEvent()
 {
-    // TODO: check if there is a remote available, if so make it so only that can turn this off. prob need new function to handle remote
     static unsigned long lastCheckTime;
     static bool triggeredThisMinute = false;
 
@@ -85,7 +83,7 @@ void handleAlarmEvent()
     }
     if (timeData.tm_min != alarmMinute) // dont trigger more than once per minute
         triggeredThisMinute = false;
-    if (alarmOn && (millis() - alarmOnMillis >= 3600000)) {
+    if (alarmOn && (millis() - alarmOnMillis >= 3600000)) { // give up after an hour
         setAlarmStatus(false);
     }
 }
@@ -98,8 +96,9 @@ void setAlarmStatus(bool status)
     }
 }
 
-void handleAlarmPattern() // TODO: have arma test, my buzzer seems busted. may need to switch to passive or better circuit
+void handleAlarmPattern()
 {
+    // TODO: have arma test this, my buzzer seems busted. may need better circuit
     static bool isBeeping = true;
     static unsigned long lastToggle = 0;
     if (!alarmOn)
@@ -122,7 +121,7 @@ void handleAlarmPattern() // TODO: have arma test, my buzzer seems busted. may n
     }
 }
 
-bool addEspNowPeer(unsigned char mac[6], bool broadcastToAll = false) // TODO: implement me
+bool addEspNowPeer(unsigned char mac[6], bool broadcastToAll = false)
 {
     if (broadcastToAll)
         memset(mac, 0xFF, 6);
@@ -167,7 +166,8 @@ void confirmPairRequest(unsigned char mac[6])
 
 void onMessageReceived(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
-    memcpy(&message, incomingData, sizeof(message)); // TODO: will it crash if a different struct is sent?
+    // TODO: verify integrity of message
+    memcpy(&message, incomingData, sizeof(message));
     Serial.print("ESP-Now data received");
     Serial.printf(" %02x%02x%02x%02x%02x%02x\n", message.mac[0], message.mac[1], message.mac[2], message.mac[3], message.mac[4], message.mac[5]);
     if (message.deviceCode != 216)
@@ -437,7 +437,7 @@ bool connectToNtp()
 
 bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySaved, bool tryNtp)
 {
-    // TODO: should probably be renamed sync to wifi
+    // TODO: should be renamed sync to wifi
     int wifiAttempts = 5;
     wl_status_t wifiStatus;
 
@@ -474,7 +474,7 @@ bool connectToWifi(const char *enterSsid, const char *enterPassword, bool trySav
     }
     if (tryNtp)
         connectToNtp();
-    WiFi.disconnect(); // TODO: get rid of some redundant disconnects with this here
+    WiFi.disconnect(); // TODO: get rid of some redundant disconnects with this added
     WiFi.channel(0); // for remote via esp-now
     return true;
 }
@@ -504,7 +504,7 @@ void handleInput()
 {
     static unsigned long buttonMillis; // static keeps the var from being redefined on subsequent calls, its essentially a global in memory but not scope
     int newPage = knob.getCount() / 2;
-    const unsigned long debounceMillis = 300; // this is an order of magnituder longer than id like but the switch isnt doing well it seems
+    const unsigned long debounceMillis = 300; // this is an order of magnituder longer than id like but my switch isnt doing well
 
     if (newPage != oldPage)
     {
